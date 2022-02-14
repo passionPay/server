@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService{
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return memberRepository.findByUserName(username)
+        return memberRepository.findByUsername(username)
                 .map(this::createUserDetails)
                 .orElseThrow(() -> new UsernameNotFoundException(username + "-> not in DB."));
     }
@@ -33,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 
         return new User(
                 String.valueOf(member.getId()),
-                member.getPassWord(),
+                member.getPassword(),
                 Collections.singleton(grantedAuthority)
         );
     }

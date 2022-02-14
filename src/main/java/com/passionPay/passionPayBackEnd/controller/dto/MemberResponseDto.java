@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MemberResponseDto {
-    private String userName;
+    private String username;
 
     public static MemberResponseDto of(Member member) {
-        return new MemberResponseDto(member.getUserName());
+        return new MemberResponseDto(member.getUsername());
     }
 
 }

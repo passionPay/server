@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class MemberInfoDto {
-    private String userName;
+    private String username;
     private String email;
     private String displayName;
     private boolean activated;
@@ -24,7 +24,7 @@ public class MemberInfoDto {
 
     public static MemberInfoDto of(Member member) {
         return MemberInfoDto.builder()
-                .userName(member.getUserName())
+                .username(member.getUsername())
                 .email(member.getEmail())
                 .displayName(member.getDisplayName())
                 .activated(member.isActivated())

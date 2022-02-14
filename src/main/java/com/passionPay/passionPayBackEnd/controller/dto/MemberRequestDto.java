@@ -14,8 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MemberRequestDto {
-    private String userName;
-    private String passWord;
+    private String username;
+    private String password;
     private String email;
     private String displayName;
     private boolean activated;
@@ -28,8 +28,8 @@ public class MemberRequestDto {
 
     public Member toMember(PasswordEncoder passwordEncoder) {
         Member member = Member.builder()
-                .userName(userName)
-                .passWord(passwordEncoder.encode(passWord))
+                .username(username)
+                .password(passwordEncoder.encode(password))
                 .email(email)
                 .displayName(displayName)
                 .activated(activated)
@@ -43,7 +43,7 @@ public class MemberRequestDto {
     }
 
     public UsernamePasswordAuthenticationToken toAuthentication() {
-        return new UsernamePasswordAuthenticationToken(userName, passWord);
+        return new UsernamePasswordAuthenticationToken(username, password);
     }
 
 }

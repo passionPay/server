@@ -20,10 +20,10 @@ public class Member {
     private Long id;
 
     @Column(nullable = false, unique=true)
-    private String userName;
+    private String username;
 
     @Column(nullable = false)
-    private String passWord;
+    private String password;
 
     @Column(nullable = false)
     private String email;

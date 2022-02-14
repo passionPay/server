@@ -28,8 +28,8 @@ public class AuthService {
 
     @Transactional
     public MemberResponseDto signup(MemberRequestDto memberRequestDto) {
-        System.out.println(memberRequestDto.getUserName());
-        if (memberRepository.existsByUserName(memberRequestDto.getUserName())) {
+        System.out.println(memberRequestDto.getUsername());
+        if (memberRepository.existsByUsername(memberRequestDto.getUsername())) {
             throw new RuntimeException("이미 가입되어 있는 유저입니다");
         }
 
@@ -96,7 +96,7 @@ public class AuthService {
 
     @Transactional
     public Long getIdByUsername(MemberRequestDto memberRequestDto) {
-        Optional<Member> member = memberRepository.findByUserName(memberRequestDto.getUserName());
+        Optional<Member> member = memberRepository.findByUsername(memberRequestDto.getUsername());
         if(member.isEmpty()) throw new RuntimeException("이미 가입되어 있는 유저입니다");
         else {
             return member.get().getId();
@@ -118,10 +118,10 @@ public class AuthService {
         Optional<Member> opMember = memberRepository.findById(id);
         if(opMember.isEmpty()) throw new RuntimeException("이미 가입되어 있는 유저입니다");
         else {
-            System.out.println("PassWord is: " + opMember.get().getPassWord());
+            System.out.println("PassWord is: " + opMember.get().getPassword());
             Member member = opMember.get();
 
-            member.setUserName(memberRequestDto.getUserName());
+            member.setUsername(memberRequestDto.getUsername());
             member.setEmail(memberRequestDto.getEmail());
             member.setDisplayName(memberRequestDto.getDisplayName());
             member.setActivated(memberRequestDto.isActivated());
