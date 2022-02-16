@@ -5,6 +5,7 @@ import com.passionPay.passionPayBackEnd.controller.dto.*;
 import com.passionPay.passionPayBackEnd.domain.Member;
 import com.passionPay.passionPayBackEnd.domain.RefreshToken;
 import com.passionPay.passionPayBackEnd.jwt.TokenProvider;
+import com.passionPay.passionPayBackEnd.repository.FollowRepository;
 import com.passionPay.passionPayBackEnd.repository.MemberRepository;
 import com.passionPay.passionPayBackEnd.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class AuthService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final MemberRepository memberRepository;
+    private final FollowRepository followRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -138,6 +140,7 @@ public class AuthService {
     @Transactional
     public Long deleteUserById(Long id) {
         if(memberRepository.existsById(id)) {
+            followRepository.deleteFollowOfUser(memberRepository.findById(id).get());
             memberRepository.deleteById(id);
             return id;
         }
