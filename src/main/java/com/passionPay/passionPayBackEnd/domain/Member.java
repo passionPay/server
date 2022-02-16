@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -56,34 +57,10 @@ public class Member {
     @Column(nullable = false)
     private Authority authority;
 
-//    public Member shallowCopy() {
-//        Member newMember = new Member();
+//    @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
+//    private Set<Follow> user;
 //
-//    }
+//    @OneToMany( mappedBy = "follower", fetch = FetchType.LAZY)
+//    private  Set<Follow> follower;
 
-//    @Builder
-//    public Member(Long id, String userName, String passWord, String email, String displayName, boolean activated, LocalDateTime createdAt, String photoUrl, String categoryName, Stage stage, int grade, Authority authority) {
-//        this.id = id;
-//        this.userName = userName;
-//        this.passWord = passWord;
-//        this.email = email;
-//        this.displayName = displayName;
-//        this.activated = activated;
-//        this.createdAt = createdAt;
-//        this.photoUrl = photoUrl;
-//        this.categoryName = categoryName;
-//        this.stage = stage;
-//        this.grade = grade;
-//        this.authority = authority;
-//    }
-    //    public Member(String userName, String passWord, Authority authority) {
-//        this.userName = userName;
-//        this.passWord = passWord;
-//        this.authority = authority;
-//    }
-
-//    @PrePersist
-//    public void createdAt() {
-//        this.createdAt = LocalDateTime.now();
-//    }
 }
