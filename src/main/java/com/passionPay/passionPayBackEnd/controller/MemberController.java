@@ -36,8 +36,8 @@ public class MemberController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MemberInfoDto> deleteUser(@PathVariable(name = "id") Long id) {
-        return ResponseEntity.ok(authService.getUserInfoById(id));
+    public ResponseEntity<Long> deleteUser(@PathVariable(name = "id") Long id) {
+        return ResponseEntity.ok(authService.deleteUserById(id));
     }
 
 

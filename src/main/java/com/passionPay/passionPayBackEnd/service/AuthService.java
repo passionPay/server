@@ -134,4 +134,15 @@ public class AuthService {
             return id;
         }
     }
+
+    @Transactional
+    public Long deleteUserById(Long id) {
+        if(memberRepository.existsById(id)) {
+            memberRepository.deleteById(id);
+            return id;
+        }
+        else {
+            throw new RuntimeException("cannot delete and non-existent user");
+        }
+    }
 }
