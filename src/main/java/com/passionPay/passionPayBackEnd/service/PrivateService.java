@@ -5,13 +5,16 @@ import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.Priva
 import com.passionPay.passionPayBackEnd.domain.Member;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
+import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePostLike;
 import com.passionPay.passionPayBackEnd.repository.MemberRepository;
+import com.passionPay.passionPayBackEnd.repository.PrivatePostLikeRepository;
 import com.passionPay.passionPayBackEnd.repository.PrivatePostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.util.List;
@@ -23,6 +26,7 @@ public class PrivateService {
 
     private final MemberRepository memberRepository;
     private final PrivatePostRepository privatePostRepository;
+    private final PrivatePostLikeRepository privatePostLikeRepository;
 
 //    @Transactional
 //    public Long addCommunity(PrivateCommunityDto privateCommunityDto) {
@@ -77,5 +81,77 @@ public class PrivateService {
         Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
         return privatePostRepository.getPostByCommunityAndMember(communityType, memberId, pageable);
     }
+
+    @Transactional
+    public Long addPostLike(Long postId, Long memberId){
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        Optional<PrivatePost> optionalPrivatePost = privatePostRepository.findById(postId);
+
+        if(optionalMember.isEmpty() || optionalPrivatePost.isEmpty()) {
+            throw new RuntimeException("invalid post or member Id!!");
+        }
+        else {
+            if(privatePostLikeRepository.existsByMemberAndPost(optionalMember.get(), optionalPrivatePost.get())) {
+                throw new RuntimeException("already existing like!!");
+            }
+            PrivatePostLike privatePostLike = PrivatePostLike.builder()
+                    .member(optionalMember.get())
+                    .post(optionalPrivatePost.get())
+                    .build();
+            privatePostLikeRepository.save(privatePostLike);
+            return privatePostLike.getId();
+        }
+    }
+
+    @Transactional
+    public Long deletePostLike(Long postId, Long memberId) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        Optional<PrivatePost> optionalPrivatePost = privatePostRepository.findById(postId);
+
+        if(optionalMember.isEmpty() || optionalPrivatePost.isEmpty()) {
+            throw new RuntimeException("invalid post or member Id!!");
+        }
+        else {
+
+            if(privatePostLikeRepository.existsByMemberAndPost(optionalMember.get(), optionalPrivatePost.get())) {
+                privatePostLikeRepository.deleteByMemberAndPost(optionalMember.get(), optionalPrivatePost.get());
+                return postId;
+            }
+            else {
+                throw new RuntimeException("like doesn't exist!!");
+            }
+
+        }
+    }
+
+    @Transactional
+    public Boolean isUserLikesPost(Long postId, Long memberId) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        Optional<PrivatePost> optionalPrivatePost = privatePostRepository.findById(postId);
+
+        if(optionalMember.isEmpty() || optionalPrivatePost.isEmpty()) {
+            throw new RuntimeException("invalid post or member Id!!");
+        }
+        else {
+            return privatePostLikeRepository.existsByMemberAndPost(optionalMember.get(), optionalPrivatePost.get());
+        }
+
+    }
+
+    @Transactional
+    public int likeCountOfPost(Long postId) {
+        Optional<PrivatePost> optionalPrivatePost = privatePostRepository.findById(postId);
+
+        if(optionalPrivatePost.isEmpty()) {
+            throw new RuntimeException("non-existent post!!");
+        }
+        else {
+            return privatePostLikeRepository.likeCountOfPost(postId);
+        }
+
+    }
+
+
+
 
 }

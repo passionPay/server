@@ -65,6 +65,38 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.getPostByCommunityAndMember(communityType, memberId, paginationInfoDto.getPageSize(), paginationInfoDto.getPageNumber()));
     }
 
+    @PostMapping("{postId}/{memberId}/like")
+    public ResponseEntity<Long> addPostLike(
+            @PathVariable(name = "postId") Long postId,
+            @PathVariable(name = "memberId") Long memberId)
+    {
+        return ResponseEntity.ok(privateService.addPostLike(postId, memberId));
+    }
+
+    @DeleteMapping("{postId}/{memberId}/like")
+    public ResponseEntity<Long> deletePostLike(
+            @PathVariable(name = "postId") Long postId,
+            @PathVariable(name = "memberId") Long memberId)
+    {
+        return ResponseEntity.ok(privateService.deletePostLike(postId, memberId));
+    }
+
+    @GetMapping("{postId}/{memberId}/like")
+    public ResponseEntity<Boolean> isUserLikesPost(
+            @PathVariable(name = "postId") Long postId,
+            @PathVariable(name = "memberId") Long memberId)
+    {
+        return ResponseEntity.ok(privateService.isUserLikesPost(postId, memberId));
+    }
+
+
+    @GetMapping("{postId}/like")
+    public ResponseEntity<Integer> likeCountOfPost(@PathVariable(name = "postId") Long postId) {
+        return ResponseEntity.ok(privateService.likeCountOfPost(postId));
+    }
+
+
+
 
 
 
