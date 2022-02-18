@@ -18,7 +18,7 @@ public class MemberInfoDto {
     private String displayName;
     private boolean activated;
     private String photoUrl;
-    private String categoryName;
+    private String schoolName;
     private Stage stage;
     private int grade;
 
@@ -29,7 +29,7 @@ public class MemberInfoDto {
                 .displayName(member.getDisplayName())
                 .activated(member.isActivated())
                 .photoUrl(member.getPhotoUrl())
-                .categoryName(member.getCategoryName())
+                .schoolName(member.getSchoolName())
                 .stage(member.getStage())
                 .grade(member.getGrade())
                 .build();

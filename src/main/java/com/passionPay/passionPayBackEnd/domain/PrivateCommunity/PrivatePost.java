@@ -1,5 +1,6 @@
-package com.passionPay.passionPayBackEnd.domain;
+package com.passionPay.passionPayBackEnd.domain.PrivateCommunity;
 
+import com.passionPay.passionPayBackEnd.domain.Member;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -20,6 +21,9 @@ public class PrivatePost {
     private Long id;
 
     @Column
+    private String title;
+
+    @Column
     private String content;
 
     @Column
@@ -29,12 +33,17 @@ public class PrivatePost {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn( name = "community_id")
-    private PrivateCommunity community;
+    @Column
+    private String schoolName;
+
+    @Column
+    private boolean isAnonymous;
+
+    @Enumerated(EnumType.STRING)
+    private PrivateCommunityType communityType;
 
 }

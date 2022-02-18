@@ -20,7 +20,7 @@ public class MemberRequestDto {
     private String displayName;
     private boolean activated;
     private String photoUrl;
-    private String categoryName;
+    private String schoolName;
     private Stage stage;
     private int grade;
 
@@ -34,7 +34,7 @@ public class MemberRequestDto {
                 .displayName(displayName)
                 .activated(activated)
                 .photoUrl(photoUrl)
-                .categoryName(categoryName)
+                .schoolName(schoolName)
                 .authority(Authority.ROLE_USER)
                 .stage(stage)
                 .grade(grade)

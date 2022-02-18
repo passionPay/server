@@ -29,14 +29,15 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
-    public MemberResponseDto signup(MemberRequestDto memberRequestDto) {
+    public Long signup(MemberRequestDto memberRequestDto) {
         System.out.println(memberRequestDto.getUsername());
         if (memberRepository.existsByUsername(memberRequestDto.getUsername())) {
             throw new RuntimeException("이미 가입되어 있는 유저입니다");
         }
 
         Member member = memberRequestDto.toMember(passwordEncoder);
-        return MemberResponseDto.of(memberRepository.save(member));
+        memberRepository.save(member);
+        return member.getId();
     }
 
     @Transactional
@@ -128,7 +129,7 @@ public class AuthService {
             member.setDisplayName(memberRequestDto.getDisplayName());
             member.setActivated(memberRequestDto.isActivated());
             member.setPhotoUrl(memberRequestDto.getPhotoUrl());
-            member.setCategoryName(memberRequestDto.getCategoryName());
+            member.setSchoolName(memberRequestDto.getSchoolName());
             member.setStage(memberRequestDto.getStage());
             member.setGrade(memberRequestDto.getGrade());
 

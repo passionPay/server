@@ -43,7 +43,7 @@ public class Member {
     private String photoUrl;
 
     @Column
-    private String categoryName;
+    private String schoolName;
 
     @Enumerated(EnumType.STRING)
     private Stage stage;
@@ -51,11 +51,13 @@ public class Member {
     @Column
     private int grade;
 
-
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Authority authority;
+
+//    @ManyToOne
+//    @JoinColumn(name = "school_id")
+//    private School schoolId;
 
 //    @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
 //    private Set<Follow> user;
