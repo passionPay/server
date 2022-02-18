@@ -46,4 +46,7 @@ public class PrivatePost {
     @Enumerated(EnumType.STRING)
     private PrivateCommunityType communityType;
 
+    @Column(columnDefinition = "integer default 1")
+    private Integer anonymousCount;
+
 }

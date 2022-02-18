@@ -50,6 +50,9 @@ public class PrivateComment {
     @Column
     private boolean isAnonymous;
 
+    @Column(nullable = true)
+    private int anonymousCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( name = "parent_id")
     @JsonIgnoreProperties("reply")
