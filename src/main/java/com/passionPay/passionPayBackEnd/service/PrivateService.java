@@ -1,12 +1,13 @@
 package com.passionPay.passionPayBackEnd.service;
 
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostDto;
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostInfoDto;
+import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.*;
 import com.passionPay.passionPayBackEnd.domain.Member;
+import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateComment;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePostLike;
 import com.passionPay.passionPayBackEnd.repository.MemberRepository;
+import com.passionPay.passionPayBackEnd.repository.PrivateCommentRepository;
 import com.passionPay.passionPayBackEnd.repository.PrivatePostLikeRepository;
 import com.passionPay.passionPayBackEnd.repository.PrivatePostRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +15,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class PrivateService {
     private final MemberRepository memberRepository;
     private final PrivatePostRepository privatePostRepository;
     private final PrivatePostLikeRepository privatePostLikeRepository;
+    private final PrivateCommentRepository privateCommentRepository;
 
 //    @Transactional
 //    public Long addCommunity(PrivateCommunityDto privateCommunityDto) {
@@ -41,6 +43,10 @@ public class PrivateService {
 //        }
 //
 //    }
+
+    /*
+     * 게시글 기능
+     */
 
     @Transactional
     public Long addPost(PrivatePostDto privatePostDto) {
@@ -81,6 +87,10 @@ public class PrivateService {
         Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
         return privatePostRepository.getPostByCommunityAndMember(communityType, memberId, pageable);
     }
+
+    /*
+     * 게시글 좋아요 기능
+     */
 
     @Transactional
     public Long addPostLike(Long postId, Long memberId){
@@ -151,7 +161,98 @@ public class PrivateService {
 
     }
 
+    /*
+     * 댓글 기능
+     */
 
+    @Transactional
+    public Long addComment(PrivateCommentDto privateCommentDto) {
+        Long memberId = privateCommentDto.getMemberId();
+        Long postId = privateCommentDto.getPostId();
+
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        Optional<PrivatePost> optionalPrivatePost = privatePostRepository.findById(postId);
+
+        if(optionalMember.isEmpty() || optionalPrivatePost.isEmpty()) {
+            throw new RuntimeException("invalid user or post id");
+        }
+        else{
+            PrivateComment privateComment;
+            if(privateCommentDto.getParentCommentId() == null) {
+                privateComment = PrivateComment.builder()
+                        .post(optionalPrivatePost.get())
+                        .member(optionalMember.get())
+                        .content(privateCommentDto.getContent())
+                        .isAnonymous(privateCommentDto.isAnonymous())
+                        .parentComment(null)
+                        .build();
+            }
+            else {
+                Optional<PrivateComment> commentOptional = privateCommentRepository.findById(privateCommentDto.getParentCommentId());
+
+                if(commentOptional.isEmpty()) {
+                    throw new RuntimeException("invalid postId!!");
+                }
+                privateComment = PrivateComment.builder()
+                        .post(optionalPrivatePost.get())
+                        .member(optionalMember.get())
+                        .content(privateCommentDto.getContent())
+                        .isAnonymous(privateCommentDto.isAnonymous())
+                        .parentComment(commentOptional.get())
+                        .build();
+            }
+            privateCommentRepository.save(privateComment);
+            return privateComment.getId();
+        }
+
+    }
+
+    @Transactional
+    public List<PrivateCommentInfoDto> getCommentByPost(Long postId) {
+
+        List<PrivateComment> commentNoReplies = privateCommentRepository.findByParentComment(null);
+
+        List<PrivateCommentInfoDto> ans = commentNoReplies.stream().map(s -> {
+            return PrivateCommentInfoDto.builder()
+                    .id(s.getId())
+                    .memberId(s.getMember().getId())
+                    .memberName(s.getMember().getUsername())
+                    .content(s.getContent())
+                    .createdAt(s.getCreatedAt())
+                    .editedAt(s.getEditedAt())
+                    .isDeleted(s.isDeleted())
+                    .isAnonymous(s.isAnonymous())
+                    .reply(s.getReply().stream().map(t -> {
+                        return PrivateReplyDto.builder()
+                                .id(t.getId())
+                                .memberId(t.getMember().getId())
+                                .memberName(t.getMember().getUsername())
+                                .content(t.getContent())
+                                .createdAt(t.getCreatedAt())
+                                .editedAt(t.getEditedAt())
+                                .isDeleted(t.isDeleted())
+                                .isAnonymous(t.isAnonymous())
+                                .build();
+                    }).collect(Collectors.toList()))
+                    .build();
+        }).collect(Collectors.toList());
+
+        return ans;
+
+    }
+
+
+//    @Transactional
+//    public List<PrivateComment> getMyComment(Long memberId) {
+//        Optional<Member> optionalMember = memberRepository.findById(memberId);
+//
+//        if(optionalMember.isEmpty()) {
+//            throw new RuntimeException("non-existent user!!");
+//        }
+//        else {
+//            return privateCommentRepository.findByMember(optionalMember.get());
+//        }
+//    }
 
 
 }

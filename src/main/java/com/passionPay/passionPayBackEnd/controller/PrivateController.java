@@ -1,11 +1,15 @@
 package com.passionPay.passionPayBackEnd.controller;
 
 import com.passionPay.passionPayBackEnd.controller.dto.PaginationInfoDto;
+import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateCommentDto;
+import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateCommentInfoDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostInfoDto;
+import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateComment;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
 import com.passionPay.passionPayBackEnd.service.PrivateService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,11 +31,6 @@ public class PrivateController {
     public PrivateController(PrivateService privateService) {
         this.privateService = privateService;
     }
-
-//    @PostMapping("/community")
-//    public ResponseEntity<Long> addCommunity(@RequestBody PrivateCommunityDto privateCommunityDto) {
-//        return ResponseEntity.ok(privateService.addCommunity(privateCommunityDto));
-//    }
 
     @PostMapping("/post")
     public ResponseEntity<Long> addPost(@RequestBody PrivatePostDto privatePostDto) {
@@ -96,7 +95,23 @@ public class PrivateController {
     }
 
 
+//    @GetMapping("{memberId}/comment")
+//    public ResponseEntity<List<PrivateComment> > getMyComment(@PathVariable(name = "memberId") Long memberId) {
+//        return ResponseEntity.ok(privateService.getMyComment(memberId));
+//    }
 
+
+    @GetMapping("{postId}/comment")
+    public ResponseEntity<List<PrivateCommentInfoDto> > getCommentByPost(@PathVariable(name = "postId") Long postId) {
+        return ResponseEntity.ok(privateService.getCommentByPost(postId));
+    }
+
+
+
+    @PostMapping("{postId}/comment")
+    public ResponseEntity<Long> addComment(@RequestBody PrivateCommentDto privateCommentDto) {
+        return ResponseEntity.ok(privateService.addComment(privateCommentDto));
+    }
 
 
 
