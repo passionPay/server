@@ -22,5 +22,7 @@ public class PrivateCommentInfoDto {
     private boolean deleted;
     private boolean anonymous;
     private Integer anonymousCount;
+    private Integer likeCount;
+    private boolean likedByMember;
     private List<PrivateReplyDto> reply;
 }

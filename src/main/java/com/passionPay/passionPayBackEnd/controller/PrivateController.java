@@ -101,9 +101,9 @@ public class PrivateController {
 //    }
 
 
-    @GetMapping("{postId}/comment")
-    public ResponseEntity<List<PrivateCommentInfoDto> > getCommentByPost(@PathVariable(name = "postId") Long postId) {
-        return ResponseEntity.ok(privateService.getCommentByPost(postId));
+    @GetMapping("{postId}/{memberId}/comment")
+    public ResponseEntity<List<PrivateCommentInfoDto> > getCommentByPostAndMember(@PathVariable(name = "postId") Long postId , @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.getCommentByPostAndMember(postId, memberId));
     }
 
 

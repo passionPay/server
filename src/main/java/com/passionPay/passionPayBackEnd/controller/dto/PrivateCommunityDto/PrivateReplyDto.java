@@ -21,4 +21,6 @@ public class PrivateReplyDto {
     private boolean deleted;
     private boolean anonymous;
     private Integer anonymousCount;
+    private Integer likeCount;
+    private boolean likedByMe;
 }

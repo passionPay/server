@@ -324,7 +324,7 @@ public class PrivateService {
     }
 
     @Transactional
-    public List<PrivateCommentInfoDto> getCommentByPost(Long postId) {
+    public List<PrivateCommentInfoDto> getCommentByPostAndMember(Long postId, Long memberId) {
 
         List<PrivateComment> commentNoReplies = privateCommentRepository.findByParentComment(null);
 
@@ -339,6 +339,8 @@ public class PrivateService {
                     .deleted(s.isDeleted())
                     .anonymous(s.isAnonymous())
                     .anonymousCount(s.getAnonymousCount())
+                    .likeCount(privateCommentLikeRepository.getLikeByComment(s.getId()))
+                    .likedByMember(privateCommentLikeRepository.existsByCommentAndMember(s, memberRepository.findById(memberId).orElseThrow(() ->new RuntimeException("invalid user!"))))
                     .reply(s.getReply().stream().map(t -> {
                         return PrivateReplyDto.builder()
                                 .id(t.getId())
@@ -350,6 +352,8 @@ public class PrivateService {
                                 .deleted(t.isDeleted())
                                 .anonymous(t.isAnonymous())
                                 .anonymousCount(t.getAnonymousCount())
+                                .likeCount(privateCommentLikeRepository.getLikeByComment(t.getId()))
+                                .likedByMe(privateCommentLikeRepository.existsByCommentAndMember(t, memberRepository.findById(memberId).orElseThrow(() ->new RuntimeException("invalid user!"))))
                                 .build();
                     }).collect(Collectors.toList()))
                     .build();

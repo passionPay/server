@@ -14,4 +14,6 @@ public interface PrivateCommentLikeRepository extends JpaRepository<PrivateComme
 
     @Query("SELECT COUNT(p.id) FROM PrivateCommentLike p WHERE p.comment.id = ?1")
     int getLikeByComment(Long commentId);
+
+
 }
