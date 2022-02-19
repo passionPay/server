@@ -24,7 +24,7 @@ public class PrivatePostInfoDto {
     private String memberName;
     private Long memberId;
     private String schoolName;
-    private boolean isAnonymous;
+    private boolean anonymous;
     private PrivateCommunityType communityType;
 
 }

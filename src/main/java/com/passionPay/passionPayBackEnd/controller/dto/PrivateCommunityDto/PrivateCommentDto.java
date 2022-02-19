@@ -13,6 +13,6 @@ public class PrivateCommentDto {
     private Long postId;
     private Long memberId;
     private String content;
-    private boolean isAnonymous;
+    private boolean anonymous;
     private Long parentCommentId;
 }

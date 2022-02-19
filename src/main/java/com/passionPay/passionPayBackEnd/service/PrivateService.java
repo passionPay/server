@@ -63,7 +63,10 @@ public class PrivateService {
                 .photoUrl(privatePostDto.getPhotoUrl())
                 .member(opMember.get())
                 .schoolName(privatePostDto.getSchoolName())
+                .anonymous(privatePostDto.isAnonymous())
                 .communityType(privatePostDto.getCommunityType())
+                .anonymousCount(1)
+                .commentCount(0)
                 .build();
 
         privatePostRepository.save(privatePost);
@@ -173,38 +176,155 @@ public class PrivateService {
         Optional<Member> optionalMember = memberRepository.findById(memberId);
         Optional<PrivatePost> optionalPrivatePost = privatePostRepository.findById(postId);
 
+        System.out.println("isAnonymous = " + privateCommentDto.isAnonymous());
+
         if(optionalMember.isEmpty() || optionalPrivatePost.isEmpty()) {
             throw new RuntimeException("invalid user or post id");
         }
         else{
             PrivateComment privateComment;
+            //대댓글이 아닌 그냥 댓글
             if(privateCommentDto.getParentCommentId() == null) {
-                privateComment = PrivateComment.builder()
-                        .post(optionalPrivatePost.get())
-                        .member(optionalMember.get())
-                        .content(privateCommentDto.getContent())
-                        .isAnonymous(privateCommentDto.isAnonymous())
-                        .parentComment(null)
-                        .build();
+                //익명 댓글의 경우
+                if(privateCommentDto.isAnonymous()){
+                    //해당 게시글에 멤버가 익명 댓글을 쓴 적이 있는 경우
+                    if(privateCommentRepository.existsByMemberAndPostAndAnonymous(optionalMember.get(), optionalPrivatePost.get(), true) ) {
+                        Pageable pageable = PageRequest.of(0, 1);
+                        List<PrivateComment> privateCommentList = privateCommentRepository.findByMemberAndPostAndAnonymous(optionalMember.get(), optionalPrivatePost.get(), true, pageable);
+                        Integer anonymousCount = privateCommentList.get(0).getAnonymousCount();
+
+                        privateComment = PrivateComment.builder()
+                                .post(optionalPrivatePost.get())
+                                .member(optionalMember.get())
+                                .content(privateCommentDto.getContent())
+                                .anonymous(privateCommentDto.isAnonymous())
+                                .anonymousCount(anonymousCount)
+                                .parentComment(null)
+                                .build();
+                    }
+                    else {
+                        //익명 댓글 작성자가 게시글 작성자일 떄
+                        if(optionalPrivatePost.get().getMember().getId() == memberId) {
+                            privateComment = PrivateComment.builder()
+                                    .post(optionalPrivatePost.get())
+                                    .member(optionalMember.get())
+                                    .content(privateCommentDto.getContent())
+                                    .anonymous(privateCommentDto.isAnonymous())
+                                    .anonymousCount(0)
+                                    .parentComment(null)
+                                    .build();
+                        }
+                        //새로운 익명 숫자 부여
+                        else {
+                            System.out.println("new anonymous user!");
+                            Integer anonymousCount = optionalPrivatePost.get().getAnonymousCount();
+                            privateComment = PrivateComment.builder()
+                                    .post(optionalPrivatePost.get())
+                                    .member(optionalMember.get())
+                                    .content(privateCommentDto.getContent())
+                                    .anonymous(privateCommentDto.isAnonymous())
+                                    .anonymousCount(anonymousCount)
+                                    .parentComment(null)
+                                    .build();
+
+                            privatePostRepository.modifyAnonymousCount(anonymousCount + 1, postId);
+
+//                            PrivatePost privatePost = optionalPrivatePost.get();
+//                            privatePost.setAnonymousCount(anonymousCount + 1);
+////                            System.out.println("new anonymous count: " + privatePost.getAnonymousCount());
+//                            privatePostRepository.saveAndFlush(privatePost);
+////                            System.out.println("real new anonymous count: " + privatePostRepository.findById(postId).get().getAnonymousCount());
+                        }
+                    }
+                }
+                //익명 댓글이 아닌 경우
+                else {
+                    privateComment = PrivateComment.builder()
+                            .post(optionalPrivatePost.get())
+                            .member(optionalMember.get())
+                            .content(privateCommentDto.getContent())
+                            .anonymous(privateCommentDto.isAnonymous())
+                            .anonymousCount(null)
+                            .parentComment(null)
+                            .build();
+                }
             }
+
+
+            //대댓글인 경우
             else {
                 Optional<PrivateComment> commentOptional = privateCommentRepository.findById(privateCommentDto.getParentCommentId());
 
                 if(commentOptional.isEmpty()) {
                     throw new RuntimeException("invalid postId!!");
                 }
-                privateComment = PrivateComment.builder()
-                        .post(optionalPrivatePost.get())
-                        .member(optionalMember.get())
-                        .content(privateCommentDto.getContent())
-                        .isAnonymous(privateCommentDto.isAnonymous())
-                        .parentComment(commentOptional.get())
-                        .build();
+
+                if(privateCommentDto.isAnonymous()){
+                    //해당 게시글에 멤버가 익명 댓글을 쓴 적이 있는 경우
+                    if(privateCommentRepository.existsByMemberAndPostAndAnonymous(optionalMember.get(), optionalPrivatePost.get(), true) ) {
+                        Pageable pageable = PageRequest.of(0, 1);
+                        List<PrivateComment> privateCommentList = privateCommentRepository.findByMemberAndPostAndAnonymous(optionalMember.get(), optionalPrivatePost.get(), true, pageable);
+                        Integer anonymousCount = privateCommentList.get(0).getAnonymousCount();
+
+                        privateComment = PrivateComment.builder()
+                                .post(optionalPrivatePost.get())
+                                .member(optionalMember.get())
+                                .content(privateCommentDto.getContent())
+                                .anonymous(privateCommentDto.isAnonymous())
+                                .anonymousCount(anonymousCount)
+                                .parentComment(commentOptional.get())
+                                .build();
+                    }
+                    else {
+                        //익명 댓글 작성자가 게시글 작성자일 떄
+                        if(optionalPrivatePost.get().getMember().getId() == memberId) {
+                            privateComment = PrivateComment.builder()
+                                    .post(optionalPrivatePost.get())
+                                    .member(optionalMember.get())
+                                    .content(privateCommentDto.getContent())
+                                    .anonymous(privateCommentDto.isAnonymous())
+                                    .anonymousCount(0)
+                                    .parentComment(commentOptional.get())
+                                    .build();
+                        }
+                        //새로운 익명 숫자 부여
+                        else {
+                            Integer anonymousCount = optionalPrivatePost.get().getAnonymousCount();
+                            privateComment = PrivateComment.builder()
+                                    .post(optionalPrivatePost.get())
+                                    .member(optionalMember.get())
+                                    .content(privateCommentDto.getContent())
+                                    .anonymous(privateCommentDto.isAnonymous())
+                                    .anonymousCount(anonymousCount)
+                                    .parentComment(commentOptional.get())
+                                    .build();
+
+                            privatePostRepository.modifyAnonymousCount(anonymousCount + 1, postId);
+                        }
+                    }
+                }
+                //익명 댓글이 아닌 경우
+                else {
+                    privateComment = PrivateComment.builder()
+                            .post(optionalPrivatePost.get())
+                            .member(optionalMember.get())
+                            .content(privateCommentDto.getContent())
+                            .anonymous(privateCommentDto.isAnonymous())
+                            .anonymousCount(null)
+                            .parentComment(commentOptional.get())
+                            .build();
+                }
             }
+            Integer commentCount = optionalPrivatePost.get().getCommentCount();
+
+            privatePostRepository.modifyCommentCount(commentCount + 1, postId);
+
             privateCommentRepository.save(privateComment);
+
+            System.out.println("real new anonymous count: " + privatePostRepository.findById(postId).get().getAnonymousCount());
+            System.out.println("real new comment count: " + privatePostRepository.findById(postId).get().getCommentCount());
             return privateComment.getId();
         }
-
     }
 
     @Transactional
@@ -220,8 +340,8 @@ public class PrivateService {
                     .content(s.getContent())
                     .createdAt(s.getCreatedAt())
                     .editedAt(s.getEditedAt())
-                    .isDeleted(s.isDeleted())
-                    .isAnonymous(s.isAnonymous())
+                    .deleted(s.isDeleted())
+                    .anonymous(s.isAnonymous())
                     .reply(s.getReply().stream().map(t -> {
                         return PrivateReplyDto.builder()
                                 .id(t.getId())
@@ -230,8 +350,8 @@ public class PrivateService {
                                 .content(t.getContent())
                                 .createdAt(t.getCreatedAt())
                                 .editedAt(t.getEditedAt())
-                                .isDeleted(t.isDeleted())
-                                .isAnonymous(t.isAnonymous())
+                                .deleted(t.isDeleted())
+                                .anonymous(t.isAnonymous())
                                 .build();
                     }).collect(Collectors.toList()))
                     .build();

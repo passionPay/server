@@ -48,10 +48,10 @@ public class PrivateComment {
     private boolean isDeleted;
 
     @Column
-    private boolean isAnonymous;
+    private boolean anonymous;
 
     @Column(nullable = true)
-    private int anonymousCount;
+    private Integer anonymousCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( name = "parent_id")

@@ -2,6 +2,7 @@ package com.passionPay.passionPayBackEnd.domain.PrivateCommunity;
 
 import com.passionPay.passionPayBackEnd.domain.Member;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -41,12 +42,15 @@ public class PrivatePost {
     private String schoolName;
 
     @Column
-    private boolean isAnonymous;
+    private boolean anonymous;
 
     @Enumerated(EnumType.STRING)
     private PrivateCommunityType communityType;
 
-    @Column(columnDefinition = "integer default 1")
+    @Column
     private Integer anonymousCount;
+
+    @Column
+    private Integer commentCount;
 
 }

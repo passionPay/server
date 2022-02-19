@@ -19,7 +19,7 @@ public class PrivateCommentInfoDto {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime editedAt;
-    private boolean isDeleted;
-    private boolean isAnonymous;
+    private boolean deleted;
+    private boolean anonymous;
     private List<PrivateReplyDto> reply;
 }

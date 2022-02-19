@@ -20,7 +20,7 @@ public class PrivatePostDto {
     private String photoUrl;
     private Long memberId;
     private String schoolName;
-    private boolean isAnonymous;
+    private boolean anonymous;
     private PrivateCommunityType communityType;
 
 }
