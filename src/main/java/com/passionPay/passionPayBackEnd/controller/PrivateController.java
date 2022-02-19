@@ -113,6 +113,29 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.addComment(privateCommentDto));
     }
 
+    /*
+     * 댓글 좋야요 기능
+     */
+
+    @PostMapping("{commentId}/{memberId}/comment/like")
+    public ResponseEntity<Long> addCommentLike(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.addCommentLike(commentId, memberId));
+    }
+
+    @DeleteMapping("{commentId}/{memberId}/comment/like")
+    public ResponseEntity<Long> deleteCommentLike(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.deleteCommentLike(commentId, memberId));
+    }
+
+    @GetMapping("{commentId}/comment/like")
+    public ResponseEntity<Integer> getLikeByComment(@PathVariable(name = "commentId") Long commentId) {
+        return ResponseEntity.ok(privateService.getLikeByComment(commentId));
+    }
+
+    @GetMapping("{commentId}/{memberId}/comment/like")
+    public ResponseEntity<Boolean> getLikeByComment(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.isCommentLikedByMember(commentId, memberId));
+    }
 
 
 //    @GetMapping("/{communityName}")

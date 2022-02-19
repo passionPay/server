@@ -21,5 +21,6 @@ public class PrivateCommentInfoDto {
     private LocalDateTime editedAt;
     private boolean deleted;
     private boolean anonymous;
+    private Integer anonymousCount;
     private List<PrivateReplyDto> reply;
 }

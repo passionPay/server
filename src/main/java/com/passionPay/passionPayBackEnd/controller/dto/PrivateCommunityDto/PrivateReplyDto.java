@@ -20,4 +20,5 @@ public class PrivateReplyDto {
     private LocalDateTime editedAt;
     private boolean deleted;
     private boolean anonymous;
+    private Integer anonymousCount;
 }

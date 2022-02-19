@@ -2,19 +2,14 @@ package com.passionPay.passionPayBackEnd.service;
 
 import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.*;
 import com.passionPay.passionPayBackEnd.domain.Member;
-import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateComment;
-import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
-import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
-import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePostLike;
-import com.passionPay.passionPayBackEnd.repository.MemberRepository;
-import com.passionPay.passionPayBackEnd.repository.PrivateCommentRepository;
-import com.passionPay.passionPayBackEnd.repository.PrivatePostLikeRepository;
-import com.passionPay.passionPayBackEnd.repository.PrivatePostRepository;
+import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.*;
+import com.passionPay.passionPayBackEnd.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.util.List;
@@ -29,6 +24,7 @@ public class PrivateService {
     private final PrivatePostRepository privatePostRepository;
     private final PrivatePostLikeRepository privatePostLikeRepository;
     private final PrivateCommentRepository privateCommentRepository;
+    private final PrivateCommentLikeRepository privateCommentLikeRepository;
 
 //    @Transactional
 //    public Long addCommunity(PrivateCommunityDto privateCommunityDto) {
@@ -216,7 +212,7 @@ public class PrivateService {
                         }
                         //새로운 익명 숫자 부여
                         else {
-                            System.out.println("new anonymous user!");
+//                            System.out.println("new anonymous user!");
                             Integer anonymousCount = optionalPrivatePost.get().getAnonymousCount();
                             privateComment = PrivateComment.builder()
                                     .post(optionalPrivatePost.get())
@@ -321,8 +317,8 @@ public class PrivateService {
 
             privateCommentRepository.save(privateComment);
 
-            System.out.println("real new anonymous count: " + privatePostRepository.findById(postId).get().getAnonymousCount());
-            System.out.println("real new comment count: " + privatePostRepository.findById(postId).get().getCommentCount());
+//            System.out.println("real new anonymous count: " + privatePostRepository.findById(postId).get().getAnonymousCount());
+//            System.out.println("real new comment count: " + privatePostRepository.findById(postId).get().getCommentCount());
             return privateComment.getId();
         }
     }
@@ -342,6 +338,7 @@ public class PrivateService {
                     .editedAt(s.getEditedAt())
                     .deleted(s.isDeleted())
                     .anonymous(s.isAnonymous())
+                    .anonymousCount(s.getAnonymousCount())
                     .reply(s.getReply().stream().map(t -> {
                         return PrivateReplyDto.builder()
                                 .id(t.getId())
@@ -352,6 +349,7 @@ public class PrivateService {
                                 .editedAt(t.getEditedAt())
                                 .deleted(t.isDeleted())
                                 .anonymous(t.isAnonymous())
+                                .anonymousCount(t.getAnonymousCount())
                                 .build();
                     }).collect(Collectors.toList()))
                     .build();
@@ -359,6 +357,77 @@ public class PrivateService {
 
         return ans;
 
+    }
+
+
+    /*
+     * 댓글 좋야요 기능
+     */
+
+    @Transactional
+    public Long addCommentLike(Long commentId, Long memberId) {
+        Optional<PrivateComment> optionalPrivateComment = privateCommentRepository.findById(commentId);
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+
+        if(optionalPrivateComment.isEmpty() || optionalMember.isEmpty()) {
+            throw new RuntimeException("invalid comment or member id!!");
+        }
+        else{
+            if(memberId == optionalPrivateComment.get().getMember().getId()) {
+                throw new RuntimeException("can't like your own comment!");
+            }
+            else {
+                PrivateCommentLike privateCommentLike = PrivateCommentLike.builder()
+                        .comment(optionalPrivateComment.get())
+                        .member(optionalMember.get())
+                        .build();
+                privateCommentLikeRepository.save(privateCommentLike);
+                return privateCommentLike.getId();
+            }
+        }
+    }
+
+    @Transactional
+    public Long deleteCommentLike(Long commentId, Long memberId) {
+        Optional<PrivateComment> optionalPrivateComment = privateCommentRepository.findById(commentId);
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+
+        if(optionalPrivateComment.isEmpty() || optionalMember.isEmpty()) {
+            throw new RuntimeException("invalid comment or member id!!");
+        }
+        else{
+            if(privateCommentLikeRepository.existsByCommentAndMember(optionalPrivateComment.get(), optionalMember.get())) {
+                privateCommentLikeRepository.deleteByCommentAndMember(optionalPrivateComment.get(), optionalMember.get());
+                return 1L;
+            }
+            else{
+                throw new RuntimeException("non-existent like");
+            }
+
+        }
+    }
+
+    @Transactional
+    public Integer getLikeByComment(Long commentId) {
+        if(privateCommentRepository.existsById(commentId)) {
+            return privateCommentLikeRepository.getLikeByComment(commentId);
+        }
+        else {
+            throw new RuntimeException("non-existent comment");
+        }
+    }
+
+    @Transactional
+    public Boolean isCommentLikedByMember(Long commentId, Long memberId) {
+        Optional<PrivateComment> optionalPrivateComment = privateCommentRepository.findById(commentId);
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+
+        if(optionalPrivateComment.isEmpty() || optionalMember.isEmpty()) {
+            throw new RuntimeException("invalid comment or member id!!");
+        }
+        else{
+            return privateCommentLikeRepository.existsByCommentAndMember(optionalPrivateComment.get(), optionalMember.get());
+        }
     }
 
 
