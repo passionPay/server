@@ -1,10 +1,15 @@
 package com.passionPay.passionPayBackEnd.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.passionPay.passionPayBackEnd.domain.GroupDomain.Group;
+import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMember;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -50,7 +55,9 @@ public class Member {
     @Column
     private int grade;
 
-
+    @JsonIgnore
+    @OneToMany(mappedBy="member")
+    private List<GroupMember> groupMembers = new ArrayList();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
