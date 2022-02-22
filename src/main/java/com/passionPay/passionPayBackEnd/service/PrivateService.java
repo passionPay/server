@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -92,6 +93,14 @@ public class PrivateService {
         return privatePostRepository.getPostCountByMember(memberId);
     }
 
+    @Transactional
+    public Integer modifyPost(Long postId, PrivatePostModifyDto privatePostModifyDto) {
+        return privatePostRepository.findById(postId).map(privatePost -> {
+            LocalDateTime editedAt = LocalDateTime.now();
+            privatePostRepository.modifyPost(postId, privatePostModifyDto.getContent(), privatePostModifyDto.getTitle(), privatePostModifyDto.getPhotoUrl(), privatePostModifyDto.isAnonymous(), editedAt);
+            return 1;
+        }).orElseThrow(() -> new RuntimeException("invalid postId"));
+    }
 
     /*
      * 게시글 좋아요 기능
@@ -391,7 +400,15 @@ public class PrivateService {
 
     @Transactional
     public Integer deleteComment(Long commentId) {
-        return privateCommentRepository
+        privateCommentRepository.deleteComment(commentId);
+        return 1;
+    }
+
+    @Transactional
+    public Integer modifyComment(Long commentId, String content) {
+        LocalDateTime now = LocalDateTime.now();
+        privateCommentRepository.modifyComment(commentId, now, content);
+        return 1;
     }
 
     /*

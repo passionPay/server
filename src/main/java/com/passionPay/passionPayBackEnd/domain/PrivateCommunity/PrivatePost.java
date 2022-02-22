@@ -34,6 +34,11 @@ public class PrivatePost {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column
+    @CreationTimestamp
+    private LocalDateTime editedAt;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( name = "member_id")
     private Member member;

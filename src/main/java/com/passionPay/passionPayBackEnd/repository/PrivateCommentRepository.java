@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +39,10 @@ public interface PrivateCommentRepository extends JpaRepository<PrivateComment, 
     Long getNumPostOfCommented(Long memberId);
 
     @Modifying
-    @Query("UPDATE PrivateComment p SET p. = true WHERE p.id = ?1")
+    @Query("UPDATE PrivateComment p SET p.deleted = true WHERE p.id = ?1")
     void deleteComment(Long commentId);
+
+    @Modifying
+    @Query("UPDATE PrivateComment p SET p.content = ?3, p.editedAt = ?2 WHERE p.id = ?1")
+    void modifyComment(Long commentId, LocalDateTime editedAt, String content);
 }

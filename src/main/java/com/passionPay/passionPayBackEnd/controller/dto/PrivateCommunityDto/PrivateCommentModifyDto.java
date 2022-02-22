@@ -9,11 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PrivateCommentDto {
+public class PrivateCommentModifyDto {
 
-    private Long postId;
-    private Long memberId;
     private String content;
-    private boolean anonymous;
-    private Long parentCommentId;
+
 }

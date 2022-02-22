@@ -1,10 +1,7 @@
 package com.passionPay.passionPayBackEnd.controller;
 
 import com.passionPay.passionPayBackEnd.controller.dto.PaginationInfoDto;
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateCommentDto;
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateCommentInfoDto;
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostDto;
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostInfoDto;
+import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.*;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateComment;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
@@ -37,6 +34,7 @@ public class PrivateController {
      * 게시글 관련
      */
 
+    //게시글 추가
     @PostMapping("/post")
     public ResponseEntity<Long> addPost(@RequestBody PrivatePostDto privatePostDto) {
         return ResponseEntity.ok(privateService.addPost(privatePostDto));
@@ -71,22 +69,35 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.getPostByCommunityAndMember(communityType, memberId, paginationInfoDto.getPageSize(), paginationInfoDto.getPageNumber()));
     }
 
+    @PutMapping("/post/{postId}")
+    public ResponseEntity<Integer> modifyPost(@PathVariable(name = "postId") Long postId, @RequestBody PrivatePostModifyDto privatePostModifyDto) {
+        return ResponseEntity.ok(privateService.modifyPost(postId, privatePostModifyDto));
+    }
+
+    //유저가 쓴 게시글 개수
     @GetMapping("/post/count/{memberId}")
     public ResponseEntity<Integer> getPostCountByMember(@PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.getPostCountByMember(memberId));
     }
 
+    //유저의 댓글이 있는 게시글을 가져옴
     @GetMapping("/post/comment/{memberId}")
     public ResponseEntity<List<PrivatePostInfoDto> > getPostByMemberComment(@PathVariable(name = "memberId") Long memberId) {
 //        System.out.println("getPostByMemberComment");
         return ResponseEntity.ok(privateService.getPostByMemberComment(memberId));
     }
 
+    //댓글이 있는 게시글의 개수
+    @GetMapping("post/comment/{memberId}/count")
+    public ResponseEntity<Long> getNumPostOfCommented(@PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.getNumPostOfCommented(memberId));
+    }
+
     /*
      * 게시글 좋아요 기능
      */
 
-    @PostMapping("/like/{postId}/{memberId}")
+    @PostMapping("/post/like/{postId}/{memberId}")
     public ResponseEntity<Long> addPostLike(
             @PathVariable(name = "postId") Long postId,
             @PathVariable(name = "memberId") Long memberId)
@@ -94,7 +105,7 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.addPostLike(postId, memberId));
     }
 
-    @DeleteMapping("/like/{postId}/{memberId}")
+    @DeleteMapping("/post/like/{postId}/{memberId}")
     public ResponseEntity<Long> deletePostLike(
             @PathVariable(name = "postId") Long postId,
             @PathVariable(name = "memberId") Long memberId)
@@ -102,7 +113,7 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.deletePostLike(postId, memberId));
     }
 
-    @GetMapping("/like/{postId}/{memberId}")
+    @GetMapping("/post/like/{postId}/{memberId}")
     public ResponseEntity<Boolean> isUserLikesPost(
             @PathVariable(name = "postId") Long postId,
             @PathVariable(name = "memberId") Long memberId)
@@ -111,7 +122,7 @@ public class PrivateController {
     }
 
 
-    @GetMapping("/like/{postId}")
+    @GetMapping("/post/like/{postId}")
     public ResponseEntity<Integer> likeCountOfPost(@PathVariable(name = "postId") Long postId) {
         return ResponseEntity.ok(privateService.likeCountOfPost(postId));
     }
@@ -133,39 +144,46 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.getCommentByPostAndMember(postId, memberId));
     }
 
-
-    @GetMapping("/comment/{memberId}/post/count")
-    public ResponseEntity<Long> getNumPostOfCommented(@PathVariable(name = "memberId") Long memberId) {
-        return ResponseEntity.ok(privateService.getNumPostOfCommented(memberId));
-    }
+//    //댓글이 있는 게시글의 개수 가져옴
+//    @GetMapping("/comment/{memberId}/post/count")
+//    public ResponseEntity<Long> getNumPostOfCommented(@PathVariable(name = "memberId") Long memberId) {
+//        return ResponseEntity.ok(privateService.getNumPostOfCommented(memberId));
+//    }
 
     @DeleteMapping("/comment/{commentId}")
     public ResponseEntity<Integer> deleteComment(@PathVariable(name = "commentId") Long commentId) {
-        return ResponseEntity.ok(privateService)
+        return ResponseEntity.ok(privateService.deleteComment(commentId));
+    }
+
+    @PutMapping("comment/{commentId}")
+    public ResponseEntity<Integer> modifyComment(@PathVariable(name = "commentId") Long commentId, @RequestBody PrivateCommentModifyDto privateCommentModifyDto) {
+        return ResponseEntity.ok(privateService.modifyComment(commentId, privateCommentModifyDto.getContent()));
     }
 
     /*
-     * 댓글 좋야요 기능
+     * 댓글 좋아요 기능
      */
 
-    @PostMapping("/{commentId}/{memberId}/comment/like")
+    @PostMapping("/comment/like/{commentId}/{memberId}")
     public ResponseEntity<Long> addCommentLike(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.addCommentLike(commentId, memberId));
     }
 
-    @DeleteMapping("/{commentId}/{memberId}/comment/like")
+    @DeleteMapping("/comment/like/{commentId}/{memberId}")
     public ResponseEntity<Long> deleteCommentLike(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.deleteCommentLike(commentId, memberId));
     }
 
-    @GetMapping("/{commentId}/comment/like")
+    @GetMapping("/comment/like/{commentId}")
     public ResponseEntity<Integer> getLikeByComment(@PathVariable(name = "commentId") Long commentId) {
         return ResponseEntity.ok(privateService.getLikeByComment(commentId));
     }
 
-    @GetMapping("/{commentId}/{memberId}/comment/like")
-    public ResponseEntity<Boolean> getLikeByComment(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
+    @GetMapping("/comment/like/{commentId}/{memberId}")
+    public ResponseEntity<Boolean> isCommentLikedByMember(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.isCommentLikedByMember(commentId, memberId));
     }
+
+
 
 }

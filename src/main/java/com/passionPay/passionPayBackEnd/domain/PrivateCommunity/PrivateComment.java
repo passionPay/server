@@ -45,7 +45,7 @@ public class PrivateComment {
 
     @Column
     @ColumnDefault("false")
-    private boolean isDeleted;
+    private boolean deleted;
 
     @Column
     private boolean anonymous;

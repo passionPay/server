@@ -21,6 +21,7 @@ public class PrivatePostInfoDto {
     private String title;
     private String photoUrl;
     private LocalDateTime createdAt;
+    private LocalDateTime editedAt;
     private String memberName;
     private Long memberId;
     private String schoolName;
