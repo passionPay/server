@@ -59,4 +59,8 @@ public interface PrivatePostRepository extends JpaRepository<PrivatePost, Long> 
     @Query("UPDATE PrivatePost p SET p.content = ?2, p.title = ?3, p.photoUrl = ?4, p.anonymous = ?5, p.editedAt = ?6 WHERE p.id = ?1")
     void modifyPost(Long postId, String content, String title, String photoUrl, boolean anonymous, LocalDateTime editedAt);
 
+    @Modifying
+    @Query("DELETE FROM PrivatePost p WHERE p.id = ?1")
+    void deletePost(Long postId);
+
 }

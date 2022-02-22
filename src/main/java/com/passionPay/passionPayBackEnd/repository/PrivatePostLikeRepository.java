@@ -4,6 +4,7 @@ import com.passionPay.passionPayBackEnd.domain.Member;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePostLike;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,9 @@ public interface PrivatePostLikeRepository extends JpaRepository<PrivatePostLike
 
     @Query("SELECT COUNT(p.id) FROM PrivatePostLike p WHERE p.post.id = ?1")
     int likeCountOfPost(Long postId);
+
+    @Modifying
+    @Query("DELETE FROM PrivatePostLike p WHERE p.post.id = ?1")
+    void deleteByMemberId(Long postId);
 
 }

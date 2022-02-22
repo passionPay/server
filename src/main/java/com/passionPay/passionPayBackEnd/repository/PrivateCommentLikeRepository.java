@@ -15,4 +15,9 @@ public interface PrivateCommentLikeRepository extends JpaRepository<PrivateComme
 
     @Query("SELECT COUNT(p.id) FROM PrivateCommentLike p WHERE p.comment.id = ?1")
     int getLikeByComment(Long commentId);
+
+    @Modifying
+    @Query("DELETE FROM PrivateCommentLike cl WHERE cl.comment.id IN " +
+            "( SELECT c.id FROM PrivateComment c WHERE c.post.id = ?1 )")
+    void deleteByPostId(Long postId);
 }

@@ -16,24 +16,17 @@ import java.util.Optional;
 
 @Repository
 public interface PrivateCommentRepository extends JpaRepository<PrivateComment, Long> {
-    List<PrivateComment> findByMember(Member member);
 
-//    @Query(
-//            "SELECT com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateCommentInfoDto" +
-//            "(p.id, p.member.id, p.member.username, p.content, p.createdAt, p.editedAt, p.delete, p.isAnonymous, " +
-//                    "com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateReplyDto()) " + "FROM PrivateComment p WHERE p.post.id = ?1"
-//    )
-//    List<PrivateCommentInfoDto> getCommentByPost(Long postId);
 
     List<PrivateComment> findByParentComment(PrivateComment privateComment);
 
-    boolean existsByMemberAndPost(Member member, PrivatePost post);
+    @Query("SELECT p FROM PrivateComment p WHERE p.post.id = ?1 AND p.parentComment IS NULL")
+    List<PrivateComment> getParentCommentByPostAndMember(Long postId);
 
     boolean existsByMemberAndPostAndAnonymous(Member member, PrivatePost post, boolean anonymous);
 
     List<PrivateComment> findByMemberAndPostAndAnonymous(Member member, PrivatePost post, boolean anonymous, Pageable pageable);
 
-    Optional<PrivateComment> findOneByMemberAndPostAndAnonymous(Member member, PrivatePost post, boolean anonymous);
 
     @Query("SELECT COUNT(DISTINCT p.post.id) FROM PrivateComment p WHERE p.member.id = ?1")
     Long getNumPostOfCommented(Long memberId);
@@ -45,4 +38,16 @@ public interface PrivateCommentRepository extends JpaRepository<PrivateComment, 
     @Modifying
     @Query("UPDATE PrivateComment p SET p.content = ?3, p.editedAt = ?2 WHERE p.id = ?1")
     void modifyComment(Long commentId, LocalDateTime editedAt, String content);
+
+    @Modifying
+    @Query("UPDATE PrivateComment p SET p.likeCount = ?2 WHERE p.id = ?1")
+    void modifyLikeCount(Long commentId, Integer likeCount);
+
+    @Modifying
+    @Query("UPDATE PrivateComment p SET p.parentComment = null WHERE p.post.id = ?1")
+    void nullifyParentCommentByPost(Long postId);
+
+    @Modifying
+    @Query("DELETE PrivateComment p WHERE p.post.id = ?1")
+    void deleteCommentByPost(Long postId);
 }

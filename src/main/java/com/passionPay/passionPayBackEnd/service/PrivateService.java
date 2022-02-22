@@ -26,20 +26,6 @@ public class PrivateService {
     private final PrivateCommentRepository privateCommentRepository;
     private final PrivateCommentLikeRepository privateCommentLikeRepository;
 
-//    @Transactional
-//    public Long addCommunity(PrivateCommunityDto privateCommunityDto) {
-//
-//        if(privateCommunityRepository.existsByCommunityNameAndCommunityType(privateCommunityDto.getCommunityName(), privateCommunityDto.getCommunityType())) {
-//            throw new RuntimeException("existing community!");
-//        }
-//        else {
-//            PrivateCommunity privateCommunity = privateCommunityDto.toPrivateCommunity();
-//            privateCommunityRepository.save(privateCommunity);
-//            return privateCommunity.getId();
-//        }
-//
-//    }
-
     /*
      * 게시글 기능
      */
@@ -101,6 +87,22 @@ public class PrivateService {
             return 1;
         }).orElseThrow(() -> new RuntimeException("invalid postId"));
     }
+
+    @Transactional
+    public Integer deletePost(Long postId) {
+        return privatePostRepository.findById(postId).map(privatePost -> {
+
+            privatePostRepository.deleteById(postId);
+            privatePostLikeRepository.deleteByMemberId(postId);
+            privateCommentLikeRepository.deleteByPostId(postId);
+            privateCommentRepository.nullifyParentCommentByPost(postId);
+            privateCommentRepository.deleteCommentByPost(postId);
+
+            return 1;
+        }).orElseThrow(() -> new RuntimeException("invalid postId"));
+    }
+
+
 
     /*
      * 게시글 좋아요 기능
@@ -220,6 +222,7 @@ public class PrivateService {
                                 .content(privateCommentDto.getContent())
                                 .anonymous(privateCommentDto.isAnonymous())
                                 .anonymousCount(anonymousCount)
+                                .likeCount(0)
                                 .parentComment(null)
                                 .build();
                     }
@@ -232,6 +235,7 @@ public class PrivateService {
                                     .content(privateCommentDto.getContent())
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(0)
+                                    .likeCount(0)
                                     .parentComment(null)
                                     .build();
                         }
@@ -245,6 +249,7 @@ public class PrivateService {
                                     .content(privateCommentDto.getContent())
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(anonymousCount)
+                                    .likeCount(0)
                                     .parentComment(null)
                                     .build();
 
@@ -266,6 +271,7 @@ public class PrivateService {
                             .content(privateCommentDto.getContent())
                             .anonymous(privateCommentDto.isAnonymous())
                             .anonymousCount(null)
+                            .likeCount(0)
                             .parentComment(null)
                             .build();
                 }
@@ -293,6 +299,7 @@ public class PrivateService {
                                 .content(privateCommentDto.getContent())
                                 .anonymous(privateCommentDto.isAnonymous())
                                 .anonymousCount(anonymousCount)
+                                .likeCount(0)
                                 .parentComment(commentOptional.get())
                                 .build();
                     }
@@ -305,6 +312,7 @@ public class PrivateService {
                                     .content(privateCommentDto.getContent())
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(0)
+                                    .likeCount(0)
                                     .parentComment(commentOptional.get())
                                     .build();
                         }
@@ -317,6 +325,7 @@ public class PrivateService {
                                     .content(privateCommentDto.getContent())
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(anonymousCount)
+                                    .likeCount(0)
                                     .parentComment(commentOptional.get())
                                     .build();
 
@@ -332,6 +341,7 @@ public class PrivateService {
                             .content(privateCommentDto.getContent())
                             .anonymous(privateCommentDto.isAnonymous())
                             .anonymousCount(null)
+                            .likeCount(0)
                             .parentComment(commentOptional.get())
                             .build();
                 }
@@ -351,7 +361,8 @@ public class PrivateService {
     @Transactional
     public List<PrivateCommentInfoDto> getCommentByPostAndMember(Long postId, Long memberId) {
 
-        List<PrivateComment> commentNoReplies = privateCommentRepository.findByParentComment(null);
+        if(!privateCommentRepository.existsById(postId)) throw new RuntimeException("invalid postId");
+        List<PrivateComment> commentNoReplies = privateCommentRepository.getParentCommentByPostAndMember(postId);
 
         List<PrivateCommentInfoDto> ans = commentNoReplies.stream().map(s -> {
             return PrivateCommentInfoDto.builder()
@@ -364,7 +375,7 @@ public class PrivateService {
                     .deleted(s.isDeleted())
                     .anonymous(s.isAnonymous())
                     .anonymousCount(s.getAnonymousCount())
-                    .likeCount(privateCommentLikeRepository.getLikeByComment(s.getId()))
+                    .likeCount(s.getLikeCount())
                     .likedByMember(privateCommentLikeRepository.existsByCommentAndMember(s, memberRepository.findById(memberId).orElseThrow(() ->new RuntimeException("invalid user!"))))
                     .reply(s.getReply().stream().map(t -> {
                         return PrivateReplyDto.builder()
@@ -377,7 +388,7 @@ public class PrivateService {
                                 .deleted(t.isDeleted())
                                 .anonymous(t.isAnonymous())
                                 .anonymousCount(t.getAnonymousCount())
-                                .likeCount(privateCommentLikeRepository.getLikeByComment(t.getId()))
+                                .likeCount(t.getLikeCount())
                                 .likedByMe(privateCommentLikeRepository.existsByCommentAndMember(t, memberRepository.findById(memberId).orElseThrow(() ->new RuntimeException("invalid user!"))))
                                 .build();
                     }).collect(Collectors.toList()))
@@ -433,6 +444,7 @@ public class PrivateService {
                         .member(optionalMember.get())
                         .build();
                 privateCommentLikeRepository.save(privateCommentLike);
+                privateCommentRepository.modifyLikeCount(commentId, optionalPrivateComment.get().getLikeCount() + 1);
                 return privateCommentLike.getId();
             }
         }
@@ -449,6 +461,7 @@ public class PrivateService {
         else{
             if(privateCommentLikeRepository.existsByCommentAndMember(optionalPrivateComment.get(), optionalMember.get())) {
                 privateCommentLikeRepository.deleteByCommentAndMember(optionalPrivateComment.get(), optionalMember.get());
+                privateCommentRepository.modifyLikeCount(commentId, optionalPrivateComment.get().getLikeCount() - 1);
                 return 1L;
             }
             else{
@@ -460,12 +473,7 @@ public class PrivateService {
 
     @Transactional
     public Integer getLikeByComment(Long commentId) {
-        if(privateCommentRepository.existsById(commentId)) {
-            return privateCommentLikeRepository.getLikeByComment(commentId);
-        }
-        else {
-            throw new RuntimeException("non-existent comment");
-        }
+        return privateCommentRepository.findById(commentId).map(PrivateComment::getLikeCount).orElseThrow(() -> new RuntimeException("invalid comment-id"));
     }
 
     @Transactional

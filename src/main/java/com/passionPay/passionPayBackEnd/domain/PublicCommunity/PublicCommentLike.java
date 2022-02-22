@@ -1,4 +1,4 @@
 package com.passionPay.passionPayBackEnd.domain.PublicCommunity;
 
-public class PublicCommunity {
+public class PublicCommentLike {
 }

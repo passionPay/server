@@ -93,6 +93,12 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.getNumPostOfCommented(memberId));
     }
 
+    @DeleteMapping("post/{postId}")
+    public ResponseEntity<Integer> deletePost(@PathVariable(name = "postId") Long postId) {
+        return ResponseEntity.ok(privateService.deletePost(postId));
+    }
+
+
     /*
      * 게시글 좋아요 기능
      */
@@ -144,18 +150,12 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.getCommentByPostAndMember(postId, memberId));
     }
 
-//    //댓글이 있는 게시글의 개수 가져옴
-//    @GetMapping("/comment/{memberId}/post/count")
-//    public ResponseEntity<Long> getNumPostOfCommented(@PathVariable(name = "memberId") Long memberId) {
-//        return ResponseEntity.ok(privateService.getNumPostOfCommented(memberId));
-//    }
-
     @DeleteMapping("/comment/{commentId}")
     public ResponseEntity<Integer> deleteComment(@PathVariable(name = "commentId") Long commentId) {
         return ResponseEntity.ok(privateService.deleteComment(commentId));
     }
 
-    @PutMapping("comment/{commentId}")
+    @PutMapping("/comment/{commentId}")
     public ResponseEntity<Integer> modifyComment(@PathVariable(name = "commentId") Long commentId, @RequestBody PrivateCommentModifyDto privateCommentModifyDto) {
         return ResponseEntity.ok(privateService.modifyComment(commentId, privateCommentModifyDto.getContent()));
     }

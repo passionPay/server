@@ -53,6 +53,9 @@ public class PrivateComment {
     @Column(nullable = true)
     private Integer anonymousCount;
 
+    @Column
+    private Integer likeCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( name = "parent_id")
     @JsonIgnoreProperties("reply")
