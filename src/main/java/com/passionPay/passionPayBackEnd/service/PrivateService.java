@@ -9,7 +9,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.util.List;
@@ -63,6 +62,7 @@ public class PrivateService {
                 .communityType(privatePostDto.getCommunityType())
                 .anonymousCount(1)
                 .commentCount(0)
+                .likeCount(0)
                 .build();
 
         privatePostRepository.save(privatePost);
@@ -70,9 +70,9 @@ public class PrivateService {
     }
 
     @Transactional
-    public List<PrivatePostInfoDto> getPostBySchoolAndCommunity(String communityName, PrivateCommunityType communityType, int pageSize, int pageNumber) {
+    public List<PrivatePostInfoDto> getPostBySchoolAndCommunity(String schoolName, PrivateCommunityType communityType, int pageSize, int pageNumber) {
         Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
-        return privatePostRepository.getPostByNameAndType(communityName, communityType, pageable);
+        return privatePostRepository.getPostBySchoolAndCommunity(schoolName, communityType, pageable);
     }
 
     @Transactional
@@ -87,6 +87,12 @@ public class PrivateService {
         return privatePostRepository.getPostByCommunityAndMember(communityType, memberId, pageable);
     }
 
+    @Transactional
+    public Integer getPostCountByMember(Long memberId) {
+        return privatePostRepository.getPostCountByMember(memberId);
+    }
+
+
     /*
      * 게시글 좋아요 기능
      */
@@ -100,14 +106,22 @@ public class PrivateService {
             throw new RuntimeException("invalid post or member Id!!");
         }
         else {
+
             if(privatePostLikeRepository.existsByMemberAndPost(optionalMember.get(), optionalPrivatePost.get())) {
                 throw new RuntimeException("already existing like!!");
             }
+
+            if(optionalPrivatePost.get().getMember().getId() == memberId){
+                throw new RuntimeException("can't like your own post");
+            }
+
             PrivatePostLike privatePostLike = PrivatePostLike.builder()
                     .member(optionalMember.get())
                     .post(optionalPrivatePost.get())
                     .build();
             privatePostLikeRepository.save(privatePostLike);
+            int likeCount = optionalPrivatePost.get().getLikeCount();
+            privatePostRepository.modifyLikeCount(likeCount + 1, postId);
             return privatePostLike.getId();
         }
     }
@@ -124,6 +138,8 @@ public class PrivateService {
 
             if(privatePostLikeRepository.existsByMemberAndPost(optionalMember.get(), optionalPrivatePost.get())) {
                 privatePostLikeRepository.deleteByMemberAndPost(optionalMember.get(), optionalPrivatePost.get());
+                int likeCount = optionalPrivatePost.get().getLikeCount();
+                privatePostRepository.modifyLikeCount(likeCount - 1, postId);
                 return postId;
             }
             else {
@@ -155,7 +171,7 @@ public class PrivateService {
             throw new RuntimeException("non-existent post!!");
         }
         else {
-            return privatePostLikeRepository.likeCountOfPost(postId);
+            return optionalPrivatePost.get().getLikeCount();
         }
 
     }
@@ -363,6 +379,20 @@ public class PrivateService {
 
     }
 
+    @Transactional
+    public Long getNumPostOfCommented(Long memberId) {
+        return privateCommentRepository.getNumPostOfCommented(memberId);
+    }
+
+    @Transactional
+    public List<PrivatePostInfoDto> getPostByMemberComment(Long memberId) {
+        return privatePostRepository.getPostByMemberComment(memberId);
+    }
+
+    @Transactional
+    public Integer deleteComment(Long commentId) {
+        return privateCommentRepository
+    }
 
     /*
      * 댓글 좋야요 기능

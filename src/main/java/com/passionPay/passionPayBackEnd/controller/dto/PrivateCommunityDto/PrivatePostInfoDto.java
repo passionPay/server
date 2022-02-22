@@ -26,8 +26,7 @@ public class PrivatePostInfoDto {
     private String schoolName;
     private boolean anonymous;
     private int commentCount;
-    private long likeCount;
-//    private boolean likedByUser;
+    private int likeCount;
     private PrivateCommunityType communityType;
 
 }

@@ -5,6 +5,7 @@ import com.passionPay.passionPayBackEnd.domain.Member;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateComment;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +32,11 @@ public interface PrivateCommentRepository extends JpaRepository<PrivateComment, 
     List<PrivateComment> findByMemberAndPostAndAnonymous(Member member, PrivatePost post, boolean anonymous, Pageable pageable);
 
     Optional<PrivateComment> findOneByMemberAndPostAndAnonymous(Member member, PrivatePost post, boolean anonymous);
+
+    @Query("SELECT COUNT(DISTINCT p.post.id) FROM PrivateComment p WHERE p.member.id = ?1")
+    Long getNumPostOfCommented(Long memberId);
+
+    @Modifying
+    @Query("UPDATE PrivateComment p SET p. = true WHERE p.id = ?1")
+    void deleteComment(Long commentId);
 }
