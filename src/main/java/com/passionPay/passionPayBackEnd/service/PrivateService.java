@@ -433,6 +433,9 @@ public class PrivateService {
                 throw new RuntimeException("can't like your own comment!");
             }
             else {
+                if(privateCommentLikeRepository.existsByCommentAndMember(optionalPrivateComment.get(), optionalMember.get())) {
+                    throw new RuntimeException("existing like!");
+                }
                 PrivateCommentLike privateCommentLike = PrivateCommentLike.builder()
                         .comment(optionalPrivateComment.get())
                         .member(optionalMember.get())

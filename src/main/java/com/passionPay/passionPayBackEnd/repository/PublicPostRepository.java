@@ -19,8 +19,8 @@ public interface PublicPostRepository extends JpaRepository<PublicPost, Long> {
 
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.PublicCommunityDto.PublicPostInfoDto(p.id, p.content, p.title ,p.photoUrl, p.createdAt, p.editedAt, p.member.username, p.member.id, p.anonymous, p.commentCount, p.likeCount, p.communityType) " +
             "FROM PublicPost p " +
-            "WHERE p.schoolName = ?1 AND p.communityType = ?2 ORDER BY p.createdAt DESC")
-    List<PublicPostInfoDto> getPostBySchoolAndCommunity(String schoolName, PublicCommunityType communityType, Pageable pageable);
+            "WHERE p.communityType = ?1 ORDER BY p.createdAt DESC")
+    List<PublicPostInfoDto> getPostByCommunity(PublicCommunityType communityType, Pageable pageable);
 
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.PublicCommunityDto.PublicPostInfoDto(p.id, p.content, p.title, p.photoUrl, p.createdAt, p.editedAt, p.member.username, p.member.id, p.anonymous, p.commentCount, p.likeCount, p.communityType) " +
             "FROM PublicPost p WHERE p.member.id = ?1 ORDER BY p.createdAt DESC")
