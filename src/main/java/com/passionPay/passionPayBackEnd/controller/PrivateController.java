@@ -2,22 +2,14 @@ package com.passionPay.passionPayBackEnd.controller;
 
 import com.passionPay.passionPayBackEnd.controller.dto.PaginationInfoDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.*;
-import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateComment;
+import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PublicCommentInfoDto;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
-import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivatePost;
 import com.passionPay.passionPayBackEnd.service.PrivateService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import java.awt.print.Pageable;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/private")
@@ -140,7 +132,7 @@ public class PrivateController {
      */
 
     @PostMapping("/comment")
-    public ResponseEntity<Long> addComment(@RequestBody PrivateCommentDto privateCommentDto) {
+    public ResponseEntity<Long> addComment(@RequestBody PublicCommentInfoDto.PrivateCommentDto privateCommentDto) {
         return ResponseEntity.ok(privateService.addComment(privateCommentDto));
     }
 

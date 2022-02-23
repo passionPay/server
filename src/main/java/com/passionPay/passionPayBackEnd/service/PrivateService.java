@@ -1,6 +1,7 @@
 package com.passionPay.passionPayBackEnd.service;
 
 import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.*;
+import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivateCommentInfoDto;
 import com.passionPay.passionPayBackEnd.domain.Member;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.*;
 import com.passionPay.passionPayBackEnd.repository.*;
@@ -192,7 +193,7 @@ public class PrivateService {
      */
 
     @Transactional
-    public Long addComment(PrivateCommentDto privateCommentDto) {
+    public Long addComment(PublicCommentInfoDto privateCommentDto) {
         Long memberId = privateCommentDto.getMemberId();
         Long postId = privateCommentDto.getPostId();
 
@@ -241,7 +242,6 @@ public class PrivateService {
                         }
                         //새로운 익명 숫자 부여
                         else {
-//                            System.out.println("new anonymous user!");
                             Integer anonymousCount = optionalPrivatePost.get().getAnonymousCount();
                             privateComment = PrivateComment.builder()
                                     .post(optionalPrivatePost.get())
@@ -254,12 +254,6 @@ public class PrivateService {
                                     .build();
 
                             privatePostRepository.modifyAnonymousCount(anonymousCount + 1, postId);
-
-//                            PrivatePost privatePost = optionalPrivatePost.get();
-//                            privatePost.setAnonymousCount(anonymousCount + 1);
-////                            System.out.println("new anonymous count: " + privatePost.getAnonymousCount());
-//                            privatePostRepository.saveAndFlush(privatePost);
-////                            System.out.println("real new anonymous count: " + privatePostRepository.findById(postId).get().getAnonymousCount());
                         }
                     }
                 }
@@ -488,19 +482,5 @@ public class PrivateService {
             return privateCommentLikeRepository.existsByCommentAndMember(optionalPrivateComment.get(), optionalMember.get());
         }
     }
-
-
-//    @Transactional
-//    public List<PrivateComment> getMyComment(Long memberId) {
-//        Optional<Member> optionalMember = memberRepository.findById(memberId);
-//
-//        if(optionalMember.isEmpty()) {
-//            throw new RuntimeException("non-existent user!!");
-//        }
-//        else {
-//            return privateCommentRepository.findByMember(optionalMember.get());
-//        }
-//    }
-
 
 }

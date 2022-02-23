@@ -1,4 +1,4 @@
-package com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto;
+package com.passionPay.passionPayBackEnd.controller.dto.PublicCommunityDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PrivateCommentInfoDto {
+public class PublicCommentInfoDto {
     private Long id;
     private Long memberId;
     private String memberName;
@@ -24,5 +24,5 @@ public class PrivateCommentInfoDto {
     private Integer anonymousCount;
     private Integer likeCount;
     private boolean likedByMember;
-    private List<PrivateReplyDto> reply;
+    private List<PublicReplyDto> reply;
 }

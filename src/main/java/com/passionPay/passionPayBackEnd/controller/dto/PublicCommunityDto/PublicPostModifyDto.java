@@ -1,4 +1,4 @@
-package com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto;
+package com.passionPay.passionPayBackEnd.controller.dto.PublicCommunityDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PrivateCommentDto {
+public class PublicPostModifyDto {
 
-    private Long postId;
-    private Long memberId;
     private String content;
+    private String title;
+    private String photoUrl;
     private boolean anonymous;
-    private Long parentCommentId;
+
 }
