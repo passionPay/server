@@ -2,7 +2,6 @@ package com.passionPay.passionPayBackEnd.controller;
 
 import com.passionPay.passionPayBackEnd.controller.dto.PaginationInfoDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.*;
-import com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PublicCommentInfoDto;
 import com.passionPay.passionPayBackEnd.domain.PrivateCommunity.PrivateCommunityType;
 import com.passionPay.passionPayBackEnd.service.PrivateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,7 +131,7 @@ public class PrivateController {
      */
 
     @PostMapping("/comment")
-    public ResponseEntity<Long> addComment(@RequestBody PublicCommentInfoDto.PrivateCommentDto privateCommentDto) {
+    public ResponseEntity<Long> addComment(@RequestBody PrivateCommentDto privateCommentDto) {
         return ResponseEntity.ok(privateService.addComment(privateCommentDto));
     }
 
@@ -175,7 +174,5 @@ public class PrivateController {
     public ResponseEntity<Boolean> isCommentLikedByMember(@PathVariable(name = "commentId") Long commentId, @PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.isCommentLikedByMember(commentId, memberId));
     }
-
-
 
 }

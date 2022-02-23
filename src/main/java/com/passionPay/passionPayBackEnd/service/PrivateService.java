@@ -193,7 +193,7 @@ public class PrivateService {
      */
 
     @Transactional
-    public Long addComment(PublicCommentInfoDto privateCommentDto) {
+    public Long addComment(PrivateCommentDto privateCommentDto) {
         Long memberId = privateCommentDto.getMemberId();
         Long postId = privateCommentDto.getPostId();
 
