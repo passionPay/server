@@ -49,4 +49,8 @@ public interface PublicCommentRepository extends JpaRepository<PublicComment, Lo
     @Modifying
     @Query("DELETE PublicComment p WHERE p.post.id = ?1")
     void deleteCommentByPost(Long postId);
+
+    @Modifying
+    @Query("UPDATE PublicComment p SET p.reportCount = ?2 WHERE p.id = ?1")
+    void modifyReportCount(Long commentId, Integer reportCount);
 }

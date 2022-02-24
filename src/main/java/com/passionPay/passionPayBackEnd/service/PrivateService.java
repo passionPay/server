@@ -103,12 +103,11 @@ public class PrivateService {
             privatePostRepository.deleteById(postId);
             privatePostLikeRepository.deleteByPostId(postId);
             privatePostReportRepository.deleteByPostId(postId);
-//            List<Long> commentList = privateCommentRepository.findByPost(privatePost);
+
             privateCommentLikeRepository.deleteByPostId(postId);
+            privateCommentReportRepository.deleteByPostId(postId);
             privateCommentRepository.nullifyParentCommentByPost(postId);
             privateCommentRepository.deleteCommentByPost(postId);
-
-//            privateCommentLikeRepository.deleteAllById(commentList);
 
             return 1;
         }).orElseThrow(() -> new RuntimeException("invalid postId"));
@@ -210,7 +209,7 @@ public class PrivateService {
             LocalDateTime now = LocalDateTime.now();
             Duration duration = Duration.between(now, member.getReportLastIssuedAt());
 
-            if(privatePost.getMember().getId() == memberId) {
+            if(Objects.equals(privatePost.getMember().getId(), memberId)) {
                 throw new RuntimeException("can't report yourself");
             }
 
@@ -249,12 +248,10 @@ public class PrivateService {
 
         }
         else {
-            throw new RuntimeException("invalid memberId");
+            throw new RuntimeException("invalid Id");
         }
         return 1;
     }
-
-
 
 
     /*
@@ -482,6 +479,8 @@ public class PrivateService {
 
     @Transactional
     public Integer deleteComment(Long commentId) {
+        privateCommentReportRepository.deleteByCommentId(commentId);
+        privateCommentLikeRepository.deleteByCommentId(commentId);
         privateCommentRepository.deleteComment(commentId);
         return 1;
     }
@@ -562,5 +561,64 @@ public class PrivateService {
             return privateCommentLikeRepository.existsByCommentAndMember(optionalPrivateComment.get(), optionalMember.get());
         }
     }
+
+    /*
+     * 댓글 신고 기능
+     */
+
+    @Transactional
+    public Integer reportComment(Long memberId, Long commentId) {
+        if(memberRepository.existsById(memberId) && privateCommentRepository.existsById(commentId)){
+            Member member = memberRepository.getById(memberId);
+            PrivateComment privateComment = privateCommentRepository.getById(commentId);
+
+            LocalDateTime now = LocalDateTime.now();
+            Duration duration = Duration.between(now, member.getReportLastIssuedAt());
+
+            if(Objects.equals(privateComment.getMember().getId(), memberId)) {
+                throw new RuntimeException("can't report yourself");
+            }
+
+            //5개 신고 새로 발행
+            if(duration.toSeconds() >= 24*60*60) {
+                memberRepository.modifyReportCount(memberId, 5);
+            }
+
+            //남아있는 신고 횟수가 0회
+            if(member.getReportCount() == 0) {
+                throw new RuntimeException("can't report anymore!");
+            }
+            //
+            else {
+                //이미 신고 한 경우
+                if(privateCommentReportRepository.existsByCommentAndMember(privateComment, member)){
+                    throw new RuntimeException("already reported");
+                }
+                //신고 하는 부분
+                else {
+                    //신고 5회 삭제
+                    if(privateComment.getReportCount() == 4) {
+//                        privatePostRepository.modifyReportCount(postId, privatePost.getReportCount() + 1);
+                        deleteComment(commentId);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                    }
+                    //신고 추가
+                    else {
+                        privateCommentRepository.modifyReportCount(commentId, privateComment.getReportCount() + 1);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                        PrivateCommentReport privateCommentReport = PrivateCommentReport.builder().member(member).comment(privateComment).build();
+//                        privateCommentReportRepository.save(privateCommentReport);
+                        privateCommentReportRepository.save(privateCommentReport);
+                    }
+                }
+            }
+
+        }
+        else {
+            throw new RuntimeException("invalid Id");
+        }
+        return 1;
+    }
+
 
 }

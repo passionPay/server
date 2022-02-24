@@ -20,4 +20,8 @@ public interface PublicCommentLikeRepository extends JpaRepository<PublicComment
     @Query("DELETE FROM PublicCommentLike cl WHERE cl.comment.id IN " +
             "( SELECT c.id FROM PublicComment c WHERE c.post.id = ?1 )")
     void deleteByPostId(Long postId);
+
+    @Modifying
+    @Query("DELETE FROM PublicCommentLike cl WHERE cl.comment.id = ?1")
+    void deleteByCommentId(Long commentId);
 }

@@ -52,4 +52,9 @@ public interface PrivateCommentRepository extends JpaRepository<PrivateComment, 
     @Modifying
     @Query("DELETE PrivateComment p WHERE p.post.id = ?1")
     void deleteCommentByPost(Long postId);
+
+    @Modifying
+    @Query("UPDATE PrivateComment p SET p.reportCount = ?2 WHERE p.id = ?1")
+    void modifyReportCount(Long commentId, Integer reportCount);
+
 }

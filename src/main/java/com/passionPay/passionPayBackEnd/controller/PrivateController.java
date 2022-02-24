@@ -183,4 +183,15 @@ public class PrivateController {
         return ResponseEntity.ok(privateService.isCommentLikedByMember(commentId, memberId));
     }
 
+    /*
+     * 댓글 신고 기능
+     */
+
+    @PutMapping("/comment/report/{commentId}/{memberId}")
+    public ResponseEntity<Integer> reportComment(
+            @PathVariable(name = "commentId") Long commentId,
+            @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.reportComment(memberId, commentId));
+    }
+
 }

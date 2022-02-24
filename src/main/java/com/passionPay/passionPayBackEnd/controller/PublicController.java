@@ -70,7 +70,6 @@ public class PublicController {
     //유저의 댓글이 있는 게시글을 가져옴
     @GetMapping("/post/comment/{memberId}")
     public ResponseEntity<List<PublicPostInfoDto> > getPostByMemberComment(@PathVariable(name = "memberId") Long memberId) {
-//        System.out.println("getPostByMemberComment");
         return ResponseEntity.ok(publicService.getPostByMemberComment(memberId));
     }
 
@@ -121,10 +120,22 @@ public class PublicController {
     }
 
 
+    /*
+     * 게시글 신고 기능
+     */
+
+    @PutMapping("/post/report/{postId}/{memberId}")
+    public ResponseEntity<Integer> reportPost(
+            @PathVariable(name = "postId") Long postId,
+            @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(publicService.reportPost(memberId, postId));
+    }
+
 
     /*
      * 댓글 기능
      */
+
 
     @PostMapping("/comment")
     public ResponseEntity<Long> addComment(@RequestBody PublicCommentDto publicCommentDto) {
@@ -171,4 +182,16 @@ public class PublicController {
         return ResponseEntity.ok(publicService.isCommentLikedByMember(commentId, memberId));
     }
 
+
+    /*
+     * 댓글 신고 기능
+     */
+
+
+    @PutMapping("/comment/report/{commentId}/{memberId}")
+    public ResponseEntity<Integer> reportComment(
+            @PathVariable(name = "commentId") Long commentId,
+            @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(publicService.reportComment(memberId, commentId));
+    }
 }

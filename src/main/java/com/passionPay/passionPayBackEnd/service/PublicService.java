@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,8 +26,10 @@ public class PublicService {
     private final MemberRepository memberRepository;
     private final PublicPostRepository publicPostRepository;
     private final PublicPostLikeRepository publicPostLikeRepository;
+    private final PublicPostReportRepository publicPostReportRepository;
     private final PublicCommentRepository publicCommentRepository;
     private final PublicCommentLikeRepository publicCommentLikeRepository;
+    private final PublicCommentReportRepository publicCommentReportRepository;
 
     /*
      * 게시글 기능
@@ -59,19 +63,19 @@ public class PublicService {
 
     @Transactional
     public List<PublicPostInfoDto> getPostByCommunity(PublicCommunityType communityType, int pageSize, int pageNumber) {
-        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return publicPostRepository.getPostByCommunity(communityType, pageable);
     }
 
     @Transactional
     public List<PublicPostInfoDto> getPostByMember(Long memberId, int pageSize, int pageNumber) {
-        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return publicPostRepository.getPostByMember(memberId, pageable);
     }
 
     @Transactional
     public List<PublicPostInfoDto> getPostByCommunityAndMember(PublicCommunityType communityType, Long memberId, int pageSize, int pageNumber) {
-        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return publicPostRepository.getPostByCommunityAndMember(communityType, memberId, pageable);
     }
 
@@ -94,8 +98,11 @@ public class PublicService {
         return publicPostRepository.findById(postId).map(publicPost -> {
 
             publicPostRepository.deleteById(postId);
-            publicPostLikeRepository.deleteByMemberId(postId);
+            publicPostLikeRepository.deleteByPostId(postId);
+            publicPostReportRepository.deleteByPostId(postId);
+
             publicCommentLikeRepository.deleteByPostId(postId);
+            publicCommentReportRepository.deleteByPostId(postId);
             publicCommentRepository.nullifyParentCommentByPost(postId);
             publicCommentRepository.deleteCommentByPost(postId);
 
@@ -104,10 +111,10 @@ public class PublicService {
     }
 
 
-
     /*
      * 게시글 좋아요 기능
      */
+
 
     @Transactional
     public Long addPostLike(Long postId, Long memberId){
@@ -123,7 +130,7 @@ public class PublicService {
                 throw new RuntimeException("already existing like!!");
             }
 
-            if(optionalPublicPost.get().getMember().getId() == memberId){
+            if(Objects.equals(optionalPublicPost.get().getMember().getId(), memberId)){
                 throw new RuntimeException("can't like your own post");
             }
 
@@ -188,8 +195,70 @@ public class PublicService {
 
     }
 
+
     /*
+     * 게시글 신고 기능
+     */
+
+    @Transactional
+    public Integer reportPost(Long memberId, Long postId) {
+        if(memberRepository.existsById(memberId) && publicPostRepository.existsById(postId)){
+            Member member = memberRepository.getById(memberId);
+            PublicPost publicPost = publicPostRepository.getById(postId);
+
+            LocalDateTime now = LocalDateTime.now();
+            Duration duration = Duration.between(now, member.getReportLastIssuedAt());
+
+            if(Objects.equals(publicPost.getMember().getId(), memberId)) {
+                throw new RuntimeException("can't report yourself");
+            }
+
+            //5개 신고 새로 발행
+            if(duration.toSeconds() >= 24*60*60) {
+                memberRepository.modifyReportCount(memberId, 5);
+            }
+
+            //남아있는 신고 횟수가 0회
+            if(member.getReportCount() == 0) {
+                throw new RuntimeException("can't report anymore!");
+            }
+            //
+            else {
+                //이미 신고 한 경우
+                if(publicPostReportRepository.existsByPostAndMember(publicPost, member)){
+                    throw new RuntimeException("already reported");
+                }
+                //신고 하는 부분
+                else {
+                    //신고 5회 삭제
+                    if(publicPost.getReportCount() == 4) {
+//                        privatePostRepository.modifyReportCount(postId, privatePost.getReportCount() + 1);
+                        deletePost(postId);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                    }
+                    //신고 추가
+                    else {
+                        publicPostRepository.modifyReportCount(postId, publicPost.getReportCount() + 1);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                        PublicPostReport publicPostReport = PublicPostReport.builder().member(member).post(publicPost).build();
+                        publicPostReportRepository.save(publicPostReport);
+                    }
+                }
+            }
+
+        }
+        else {
+            throw new RuntimeException("invalid Id");
+        }
+        return 1;
+    }
+
+
+
+    /*
+     *
      * 댓글 기능
+     *
      */
 
     @Transactional
@@ -230,7 +299,7 @@ public class PublicService {
                     }
                     else {
                         //익명 댓글 작성자가 게시글 작성자일 떄
-                        if(optionalPublicPost.get().getMember().getId() == memberId) {
+                        if(Objects.equals(optionalPublicPost.get().getMember().getId(), memberId)) {
                             publicComment = PublicComment.builder()
                                     .post(optionalPublicPost.get())
                                     .member(optionalMember.get())
@@ -304,7 +373,7 @@ public class PublicService {
                     }
                     else {
                         //익명 댓글 작성자가 게시글 작성자일 떄
-                        if(optionalPublicPost.get().getMember().getId() == memberId) {
+                        if(Objects.equals(optionalPublicPost.get().getMember().getId(), memberId)) {
                             publicComment = PublicComment.builder()
                                     .post(optionalPublicPost.get())
                                     .member(optionalMember.get())
@@ -354,8 +423,6 @@ public class PublicService {
 
             publicCommentRepository.save(publicComment);
 
-//            System.out.println("real new anonymous count: " + publicPostRepository.findById(postId).get().getAnonymousCount());
-//            System.out.println("real new comment count: " + publicPostRepository.findById(postId).get().getCommentCount());
             return publicComment.getId();
         }
     }
@@ -413,6 +480,8 @@ public class PublicService {
 
     @Transactional
     public Integer deleteComment(Long commentId) {
+        publicCommentReportRepository.deleteByCommentId(commentId);
+        publicCommentLikeRepository.deleteByCommentId(commentId);
         publicCommentRepository.deleteComment(commentId);
         return 1;
     }
@@ -437,7 +506,7 @@ public class PublicService {
             throw new RuntimeException("invalid comment or member id!!");
         }
         else{
-            if(memberId == optionalPublicComment.get().getMember().getId()) {
+            if(memberId.equals(optionalPublicComment.get().getMember().getId())) {
                 throw new RuntimeException("can't like your own comment!");
             }
             else {
@@ -493,5 +562,62 @@ public class PublicService {
             return publicCommentLikeRepository.existsByCommentAndMember(optionalPublicComment.get(), optionalMember.get());
         }
     }
+
+    /*
+     * 댓글 신고 기능
+     */
+
+    @Transactional
+    public Integer reportComment(Long memberId, Long commentId) {
+        if(memberRepository.existsById(memberId) && publicCommentRepository.existsById(commentId)){
+            Member member = memberRepository.getById(memberId);
+            PublicComment publicComment = publicCommentRepository.getById(commentId);
+
+            LocalDateTime now = LocalDateTime.now();
+            Duration duration = Duration.between(now, member.getReportLastIssuedAt());
+
+            if(Objects.equals(publicComment.getMember().getId(), memberId)) {
+                throw new RuntimeException("can't report yourself");
+            }
+
+            //5개 신고 새로 발행
+            if(duration.toSeconds() >= 24*60*60) {
+                memberRepository.modifyReportCount(memberId, 5);
+            }
+
+            //남아있는 신고 횟수가 0회
+            if(member.getReportCount() == 0) {
+                throw new RuntimeException("can't report anymore!");
+            }
+            //
+            else {
+                //이미 신고 한 경우
+                if(publicCommentReportRepository.existsByCommentAndMember(publicComment, member)){
+                    throw new RuntimeException("already reported");
+                }
+                //신고 하는 부분
+                else {
+                    //신고 5회 삭제
+                    if(publicComment.getReportCount() == 4) {
+                        deleteComment(commentId);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                    }
+                    //신고 추가
+                    else {
+                        publicCommentRepository.modifyReportCount(commentId, publicComment.getReportCount() + 1);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                        PublicCommentReport publicCommentReport = PublicCommentReport.builder().member(member).comment(publicComment).build();
+                        publicCommentReportRepository.save(publicCommentReport);
+                    }
+                }
+            }
+
+        }
+        else {
+            throw new RuntimeException("invalid memberId");
+        }
+        return 1;
+    }
+
 
 }
