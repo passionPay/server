@@ -1,4 +1,4 @@
-package com.passionPay.passionPayBackEnd.domain.PrivateCommunity;
+package com.passionPay.passionPayBackEnd.domain.PublicCommunity;
 
 import com.passionPay.passionPayBackEnd.domain.Member;
 import lombok.*;
@@ -11,18 +11,18 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "PrivateCommentLike")
-public class PrivateCommentLike {
+@Table(name = "PublicCommentReport")
+public class PublicCommentReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "comment_id")
-    private PrivateComment comment;
+    private PublicComment comment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
 

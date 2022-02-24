@@ -61,4 +61,7 @@ public class PrivatePost {
     @Column
     private Integer likeCount;
 
+    @Column
+    private Integer reportCount;
+
 }

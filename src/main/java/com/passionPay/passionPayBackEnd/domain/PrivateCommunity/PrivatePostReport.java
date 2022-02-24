@@ -11,19 +11,19 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "PrivateCommentLike")
-public class PrivateCommentLike {
+@Table(name = "PrivatePostReport")
+public class PrivatePostReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private PrivateComment comment;
+    @JoinColumn( name = "post_id")
+    private PrivatePost post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn( name = "member_id")
     private Member member;
 
 }

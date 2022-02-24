@@ -11,8 +11,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "PrivateCommentLike")
-public class PrivateCommentLike {
+@Table(name = "PrivateCommentReport")
+public class PrivateCommentReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

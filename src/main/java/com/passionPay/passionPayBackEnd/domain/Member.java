@@ -55,14 +55,11 @@ public class Member {
     @Column(nullable = false)
     private Authority authority;
 
-//    @ManyToOne
-//    @JoinColumn(name = "school_id")
-//    private School schoolId;
+    @Column
+    private int reportCount;
 
-//    @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
-//    private Set<Follow> user;
-//
-//    @OneToMany( mappedBy = "follower", fetch = FetchType.LAZY)
-//    private  Set<Follow> follower;
+    @Column(updatable = true, nullable = false)
+    @CreationTimestamp
+    private LocalDateTime reportLastIssuedAt;
 
 }

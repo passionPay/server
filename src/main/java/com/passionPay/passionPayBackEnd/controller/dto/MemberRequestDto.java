@@ -38,6 +38,7 @@ public class MemberRequestDto {
                 .authority(Authority.ROLE_USER)
                 .stage(stage)
                 .grade(grade)
+                .reportCount(5)
                 .build();
         return member;
     }

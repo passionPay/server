@@ -27,6 +27,8 @@ public interface PrivateCommentRepository extends JpaRepository<PrivateComment, 
 
     List<PrivateComment> findByMemberAndPostAndAnonymous(Member member, PrivatePost post, boolean anonymous, Pageable pageable);
 
+    @Query("SELECT p.id FROM PrivateComment p WHERE p.post = ?1")
+    List<Long> findByPost(PrivatePost post);
 
     @Query("SELECT COUNT(DISTINCT p.post.id) FROM PrivateComment p WHERE p.member.id = ?1")
     Long getNumPostOfCommented(Long memberId);

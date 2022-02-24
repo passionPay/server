@@ -63,4 +63,8 @@ public interface PrivatePostRepository extends JpaRepository<PrivatePost, Long> 
     @Query("DELETE FROM PrivatePost p WHERE p.id = ?1")
     void deletePost(Long postId);
 
+    @Modifying
+    @Query("UPDATE PrivatePost p SET p.reportCount = ?2 WHERE p.id = ?1")
+    void modifyReportCount(Long postId, Integer reportCount);
+
 }

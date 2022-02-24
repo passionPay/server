@@ -57,4 +57,7 @@ public class PublicPost {
     @Column
     private Integer likeCount;
 
+    @Column
+    private Integer reportCount;
+
 }

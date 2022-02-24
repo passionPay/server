@@ -50,6 +50,7 @@ public class PublicService {
                 .anonymousCount(1)
                 .commentCount(0)
                 .likeCount(0)
+                .reportCount(0)
                 .build();
 
         publicPostRepository.save(publicPost);
@@ -223,6 +224,7 @@ public class PublicService {
                                 .anonymous(publicCommentDto.isAnonymous())
                                 .anonymousCount(anonymousCount)
                                 .likeCount(0)
+                                .reportCount(0)
                                 .parentComment(null)
                                 .build();
                     }
@@ -236,6 +238,7 @@ public class PublicService {
                                     .anonymous(publicCommentDto.isAnonymous())
                                     .anonymousCount(0)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(null)
                                     .build();
                         }
@@ -249,6 +252,7 @@ public class PublicService {
                                     .anonymous(publicCommentDto.isAnonymous())
                                     .anonymousCount(anonymousCount)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(null)
                                     .build();
 
@@ -265,6 +269,7 @@ public class PublicService {
                             .anonymous(publicCommentDto.isAnonymous())
                             .anonymousCount(null)
                             .likeCount(0)
+                            .reportCount(0)
                             .parentComment(null)
                             .build();
                 }
@@ -293,6 +298,7 @@ public class PublicService {
                                 .anonymous(publicCommentDto.isAnonymous())
                                 .anonymousCount(anonymousCount)
                                 .likeCount(0)
+                                .reportCount(0)
                                 .parentComment(commentOptional.get())
                                 .build();
                     }
@@ -306,6 +312,7 @@ public class PublicService {
                                     .anonymous(publicCommentDto.isAnonymous())
                                     .anonymousCount(0)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(commentOptional.get())
                                     .build();
                         }
@@ -319,6 +326,7 @@ public class PublicService {
                                     .anonymous(publicCommentDto.isAnonymous())
                                     .anonymousCount(anonymousCount)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(commentOptional.get())
                                     .build();
 
@@ -335,6 +343,7 @@ public class PublicService {
                             .anonymous(publicCommentDto.isAnonymous())
                             .anonymousCount(null)
                             .likeCount(0)
+                            .reportCount(0)
                             .parentComment(commentOptional.get())
                             .build();
                 }

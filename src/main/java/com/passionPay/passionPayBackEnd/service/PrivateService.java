@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,9 +28,13 @@ public class PrivateService {
     private final PrivatePostLikeRepository privatePostLikeRepository;
     private final PrivateCommentRepository privateCommentRepository;
     private final PrivateCommentLikeRepository privateCommentLikeRepository;
+    private final PrivatePostReportRepository privatePostReportRepository;
+    private final PrivateCommentReportRepository privateCommentReportRepository;
 
     /*
+     *
      * 게시글 기능
+     *
      */
 
     @Transactional
@@ -51,6 +57,7 @@ public class PrivateService {
                 .anonymousCount(1)
                 .commentCount(0)
                 .likeCount(0)
+                .reportCount(0)
                 .build();
 
         privatePostRepository.save(privatePost);
@@ -59,19 +66,19 @@ public class PrivateService {
 
     @Transactional
     public List<PrivatePostInfoDto> getPostBySchoolAndCommunity(String schoolName, PrivateCommunityType communityType, int pageSize, int pageNumber) {
-        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return privatePostRepository.getPostBySchoolAndCommunity(schoolName, communityType, pageable);
     }
 
     @Transactional
     public List<PrivatePostInfoDto> getPostByMember(Long memberId, int pageSize, int pageNumber) {
-        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return privatePostRepository.getPostByMember(memberId, pageable);
     }
 
     @Transactional
     public List<PrivatePostInfoDto> getPostByCommunityAndMember(PrivateCommunityType communityType, Long memberId, int pageSize, int pageNumber) {
-        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return privatePostRepository.getPostByCommunityAndMember(communityType, memberId, pageable);
     }
 
@@ -94,16 +101,18 @@ public class PrivateService {
         return privatePostRepository.findById(postId).map(privatePost -> {
 
             privatePostRepository.deleteById(postId);
-            privatePostLikeRepository.deleteByMemberId(postId);
+            privatePostLikeRepository.deleteByPostId(postId);
+            privatePostReportRepository.deleteByPostId(postId);
+//            List<Long> commentList = privateCommentRepository.findByPost(privatePost);
             privateCommentLikeRepository.deleteByPostId(postId);
             privateCommentRepository.nullifyParentCommentByPost(postId);
             privateCommentRepository.deleteCommentByPost(postId);
 
+//            privateCommentLikeRepository.deleteAllById(commentList);
+
             return 1;
         }).orElseThrow(() -> new RuntimeException("invalid postId"));
     }
-
-
 
     /*
      * 게시글 좋아요 기능
@@ -123,7 +132,7 @@ public class PrivateService {
                 throw new RuntimeException("already existing like!!");
             }
 
-            if(optionalPrivatePost.get().getMember().getId() == memberId){
+            if(Objects.equals(optionalPrivatePost.get().getMember().getId(), memberId)){
                 throw new RuntimeException("can't like your own post");
             }
 
@@ -189,7 +198,69 @@ public class PrivateService {
     }
 
     /*
+     * 게시글 신고 기능
+     */
+
+    @Transactional
+    public Integer reportPost(Long memberId, Long postId) {
+        if(memberRepository.existsById(memberId) && privatePostRepository.existsById(postId)){
+            Member member = memberRepository.getById(memberId);
+            PrivatePost privatePost = privatePostRepository.getById(postId);
+
+            LocalDateTime now = LocalDateTime.now();
+            Duration duration = Duration.between(now, member.getReportLastIssuedAt());
+
+            if(privatePost.getMember().getId() == memberId) {
+                throw new RuntimeException("can't report yourself");
+            }
+
+            //5개 신고 새로 발행
+            if(duration.toSeconds() >= 24*60*60) {
+                memberRepository.modifyReportCount(memberId, 5);
+            }
+
+            //남아있는 신고 횟수가 0회
+            if(member.getReportCount() == 0) {
+                throw new RuntimeException("can't report anymore!");
+            }
+            //
+            else {
+                //이미 신고 한 경우
+                if(privatePostReportRepository.existsByPostAndMember(privatePost, member)){
+                    throw new RuntimeException("already reported");
+                }
+                //신고 하는 부분
+                else {
+                    //신고 5회 삭제
+                    if(privatePost.getReportCount() == 4) {
+//                        privatePostRepository.modifyReportCount(postId, privatePost.getReportCount() + 1);
+                        deletePost(postId);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                    }
+                    //신고 추가
+                    else {
+                        privatePostRepository.modifyReportCount(postId, privatePost.getReportCount() + 1);
+                        memberRepository.modifyReportCount(memberId, member.getReportCount() - 1);
+                        PrivatePostReport privatePostReport = PrivatePostReport.builder().member(member).post(privatePost).build();
+                        privatePostReportRepository.save(privatePostReport);
+                    }
+                }
+            }
+
+        }
+        else {
+            throw new RuntimeException("invalid memberId");
+        }
+        return 1;
+    }
+
+
+
+
+    /*
+     *
      * 댓글 기능
+     *
      */
 
     @Transactional
@@ -224,12 +295,13 @@ public class PrivateService {
                                 .anonymous(privateCommentDto.isAnonymous())
                                 .anonymousCount(anonymousCount)
                                 .likeCount(0)
+                                .reportCount(0)
                                 .parentComment(null)
                                 .build();
                     }
                     else {
                         //익명 댓글 작성자가 게시글 작성자일 떄
-                        if(optionalPrivatePost.get().getMember().getId() == memberId) {
+                        if(Objects.equals(optionalPrivatePost.get().getMember().getId(), memberId)) {
                             privateComment = PrivateComment.builder()
                                     .post(optionalPrivatePost.get())
                                     .member(optionalMember.get())
@@ -237,6 +309,7 @@ public class PrivateService {
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(0)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(null)
                                     .build();
                         }
@@ -250,6 +323,7 @@ public class PrivateService {
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(anonymousCount)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(null)
                                     .build();
 
@@ -266,6 +340,7 @@ public class PrivateService {
                             .anonymous(privateCommentDto.isAnonymous())
                             .anonymousCount(null)
                             .likeCount(0)
+                            .reportCount(0)
                             .parentComment(null)
                             .build();
                 }
@@ -294,12 +369,13 @@ public class PrivateService {
                                 .anonymous(privateCommentDto.isAnonymous())
                                 .anonymousCount(anonymousCount)
                                 .likeCount(0)
+                                .reportCount(0)
                                 .parentComment(commentOptional.get())
                                 .build();
                     }
                     else {
                         //익명 댓글 작성자가 게시글 작성자일 떄
-                        if(optionalPrivatePost.get().getMember().getId() == memberId) {
+                        if(Objects.equals(optionalPrivatePost.get().getMember().getId(), memberId)) {
                             privateComment = PrivateComment.builder()
                                     .post(optionalPrivatePost.get())
                                     .member(optionalMember.get())
@@ -307,6 +383,7 @@ public class PrivateService {
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(0)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(commentOptional.get())
                                     .build();
                         }
@@ -320,6 +397,7 @@ public class PrivateService {
                                     .anonymous(privateCommentDto.isAnonymous())
                                     .anonymousCount(anonymousCount)
                                     .likeCount(0)
+                                    .reportCount(0)
                                     .parentComment(commentOptional.get())
                                     .build();
 
@@ -336,6 +414,7 @@ public class PrivateService {
                             .anonymous(privateCommentDto.isAnonymous())
                             .anonymousCount(null)
                             .likeCount(0)
+                            .reportCount(0)
                             .parentComment(commentOptional.get())
                             .build();
                 }
@@ -346,8 +425,6 @@ public class PrivateService {
 
             privateCommentRepository.save(privateComment);
 
-//            System.out.println("real new anonymous count: " + privatePostRepository.findById(postId).get().getAnonymousCount());
-//            System.out.println("real new comment count: " + privatePostRepository.findById(postId).get().getCommentCount());
             return privateComment.getId();
         }
     }
@@ -429,7 +506,7 @@ public class PrivateService {
             throw new RuntimeException("invalid comment or member id!!");
         }
         else{
-            if(memberId == optionalPrivateComment.get().getMember().getId()) {
+            if(memberId.equals(optionalPrivateComment.get().getMember().getId())) {
                 throw new RuntimeException("can't like your own comment!");
             }
             else {

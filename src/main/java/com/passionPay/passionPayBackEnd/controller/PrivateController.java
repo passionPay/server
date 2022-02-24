@@ -36,8 +36,6 @@ public class PrivateController {
             @PathVariable(name = "memberId") Long memberId,
             @RequestBody PaginationInfoDto paginationInfoDto)
     {
-        System.out.println("post by memberId: " + memberId);
-        System.out.println(paginationInfoDto.getPageSize() +  " " + paginationInfoDto.getPageNumber());
         return ResponseEntity.ok(privateService.getPostByMember(memberId, paginationInfoDto.getPageSize(), paginationInfoDto.getPageNumber()));
     }
 
@@ -47,7 +45,6 @@ public class PrivateController {
             @PathVariable(name = "communityType") PrivateCommunityType communityType,
             @RequestBody PaginationInfoDto paginationInfoDto)
     {
-        System.out.println("post by school and community");
         return ResponseEntity.ok(privateService.getPostBySchoolAndCommunity(schoolName, communityType, paginationInfoDto.getPageSize(), paginationInfoDto.getPageNumber()));
     }
 
@@ -122,6 +119,17 @@ public class PrivateController {
     @GetMapping("/post/like/{postId}")
     public ResponseEntity<Integer> likeCountOfPost(@PathVariable(name = "postId") Long postId) {
         return ResponseEntity.ok(privateService.likeCountOfPost(postId));
+    }
+
+    /*
+     * 게시글 신고 기능
+     */
+
+    @PutMapping("/post/report/{postId}/{memberId}")
+    public ResponseEntity<Integer> reportPost(
+            @PathVariable(name = "postId") Long postId,
+            @PathVariable(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(privateService.reportPost(memberId, postId));
     }
 
 

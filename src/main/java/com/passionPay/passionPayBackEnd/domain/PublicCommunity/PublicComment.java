@@ -56,6 +56,9 @@ public class PublicComment {
     @Column
     private Integer likeCount;
 
+    @Column
+    private Integer reportCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( name = "parent_id")
     @JsonIgnoreProperties("reply")
