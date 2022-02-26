@@ -51,6 +51,7 @@ public class TimestampService {
                 .orElseThrow(RuntimeException::new);
     }
 
+    /*
     @Transactional
     public int updateTimestampColor(Long taskId, String timestampColor) {
         Optional<Task> taskOptional = taskRepository.findByTaskId(taskId);
@@ -62,6 +63,7 @@ public class TimestampService {
                 .map(task -> timestampRepository.updateTimestampColorByTask(task, timestampColor))
                 .orElseThrow(RuntimeException::new);
     }
+    */
 
     @Transactional
     public Timestamp updateTimestampEndTime(Long timestampId, String endTime) {

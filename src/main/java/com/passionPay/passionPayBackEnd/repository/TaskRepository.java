@@ -22,7 +22,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findBySubject(Subject subject);
 
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.PlannerDto.TaskDto(t.taskId, " +
-            "t.taskName, t.status, t.totalTime) " +
+            "t.taskName, t.status, t.totalTime, t.color) " +
             "FROM Task t INNER JOIN t.planner " +
             "WHERE t.planner = :planner")
     List<TaskDto> findByPlanner(@Param("planner") Planner planner);

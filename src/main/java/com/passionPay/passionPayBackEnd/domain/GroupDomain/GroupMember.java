@@ -10,6 +10,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name="group_member", uniqueConstraints = @UniqueConstraint(columnNames = {"group_id", "member_id"}))
+@Entity(name="GroupMember")
 public class GroupMember {
     @Id
     @Column(name="id")
@@ -17,10 +19,14 @@ public class GroupMember {
     private Long groupMemberId;
 
     @ManyToOne
-    @JoinColumn(name="group_id")
     private Group group;
 
+    @Column(name="group_id", updatable = false, insertable = false)
+    private Long groupId;
+
     @ManyToOne
-    @JoinColumn(name="member_id")
     private Member member;
+
+    @Column(name="member_id", updatable = false, insertable = false)
+    private Long memberId;
 }

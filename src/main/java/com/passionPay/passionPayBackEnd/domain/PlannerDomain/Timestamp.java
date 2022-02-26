@@ -28,7 +28,4 @@ public class Timestamp {
 
     @Column(name="end_time", nullable = false)
     private LocalTime endTime;
-
-    @Column(name="color", nullable = false)
-    private String color;
 }

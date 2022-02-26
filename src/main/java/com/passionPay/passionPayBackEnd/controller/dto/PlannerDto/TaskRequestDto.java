@@ -16,6 +16,7 @@ public class TaskRequestDto {
     private String subjectTitle;
     private String taskName;
     private int status;
+    private String color;
 
     public static Task from (TaskRequestDto taskRequestDto, Planner planner, Subject subject) {
         return Task.builder()
@@ -23,6 +24,7 @@ public class TaskRequestDto {
                 .status(taskRequestDto.getStatus())
                 .planner(planner)
                 .subject(subject)
+                .color(taskRequestDto.getColor())
                 .build();
     }
 }

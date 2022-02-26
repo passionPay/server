@@ -35,11 +35,13 @@ public class TimestampController {
     }
 
     // task 와 연관된 timestamp color 전부 수정
+    /*
     @PutMapping("/task/{taskId}/timestamp/color")
     public ResponseEntity<Integer> updateTimestampColor(
             @PathVariable(name="taskId") Long taskId, @RequestBody String timestampColor) {
         return ResponseEntity.ok(timestampService.updateTimestampColor(taskId, timestampColor));
     }
+    */
 
     /*
     // timestamp 종료시간 설정

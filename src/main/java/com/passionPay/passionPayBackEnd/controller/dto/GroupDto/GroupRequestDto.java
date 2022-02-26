@@ -1,8 +1,6 @@
 package com.passionPay.passionPayBackEnd.controller.dto.GroupDto;
 
-import com.passionPay.passionPayBackEnd.controller.dto.MemberInfoDto;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.Group;
-import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMember;
 import lombok.*;
 
 import java.util.List;
@@ -14,18 +12,19 @@ import java.util.List;
 @Builder
 public class GroupRequestDto {
     private String groupName;
-    private String groupGoal;
+    private String groupDescription;
     private int groupTimeGoal;
-    private Long memberId; // 그룹 생성자
     private int maxMember;
-    private String password;
+    private List<String> groupMissions;
+    private boolean groupPrivacy;
+    private String groupPassword;
 
     public static Group from(GroupRequestDto groupRequestDto) {
         return Group.builder()
-                .groupGoal(groupRequestDto.getGroupGoal())
                 .groupName(groupRequestDto.getGroupName())
                 .groupTimeGoal(groupRequestDto.getGroupTimeGoal())
-                .groupPassword(groupRequestDto.getPassword())
+                .groupPassword(groupRequestDto.getGroupPassword())
+                .groupDescription(groupRequestDto.getGroupDescription())
                 .maxMember(groupRequestDto.getMaxMember())
                 .build();
     }

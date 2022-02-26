@@ -2,6 +2,7 @@ package com.passionPay.passionPayBackEnd.util;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -14,6 +15,11 @@ public class DateUtil {
 
     public static String formatTimeToString(LocalTime time) {
         return time.format(DateTimeFormatter.ISO_LOCAL_TIME);
+    }
+
+    public static String formatDateTimeToString(LocalDateTime dateTime) {
+        if (dateTime == null) return null;
+        return dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     public static LocalDate parseStringToDate(String date) {

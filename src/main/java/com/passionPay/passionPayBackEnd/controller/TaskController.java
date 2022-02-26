@@ -64,6 +64,7 @@ public class TaskController {
         if (task == null) throw new RuntimeException("유효하지 않은 태스크");
         task.setStatus(taskRequestDto.getStatus());
         task.setTaskName(taskRequestDto.getTaskName());
+        task.setColor(taskRequestDto.getColor());
 
         // task 과목 수정
         if (task.getSubject().getTitle() != taskRequestDto.getSubjectTitle()) {

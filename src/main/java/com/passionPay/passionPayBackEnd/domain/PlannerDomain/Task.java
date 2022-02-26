@@ -48,6 +48,9 @@ public class Task {
     // 0 - 미완 / 1 - X / 2 - 세모 / 3 - O
     private int status;
 
+    @Column(name="color")
+    private String color;
+
     public void addTimestamp(Timestamp timestamp) {
         timestamps.add(timestamp);
     }

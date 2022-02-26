@@ -29,11 +29,13 @@ public interface TimestampRepository extends JpaRepository<Timestamp, Long> {
     List<Timestamp> findByPlannerOrderById(@Param("planner") Planner planner);
 
     // timestamp 색상 업데이트
+    /*
     @Modifying(clearAutomatically = true) // 영속성 컨텍스트 초기화
     @Query("UPDATE Timestamp t " +
             "SET t.color = :color " +
             "WHERE t.task = :task")
     int updateTimestampColorByTask(@Param("task") Task task, @Param("color") String color);
+    */
 
     void delete(Timestamp timestamp);
     void deleteById(Long timestampId);

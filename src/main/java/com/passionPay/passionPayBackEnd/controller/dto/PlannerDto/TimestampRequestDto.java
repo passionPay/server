@@ -13,14 +13,12 @@ import lombok.*;
 public class TimestampRequestDto {
     private String startTime;
     private String endTime;
-    private String color;
 
     static public Timestamp from(TimestampRequestDto timestampRequestDto, Task task) {
         return Timestamp.builder()
                 .task(task)
                 .startTime(DateUtil.parseStringToTime(timestampRequestDto.getStartTime()))
                 .endTime(DateUtil.parseStringToTime(timestampRequestDto.getEndTime()))
-                .color(timestampRequestDto.getColor())
                 .build();
     }
 }

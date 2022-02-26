@@ -13,6 +13,7 @@ public class TaskDto {
     private String taskName;
     private int status;
     private long totalTime; // ms
+    private String color;
 
     public static TaskDto from(Task task) {
         if (task == null) return null;

@@ -2,8 +2,7 @@ package com.passionPay.passionPayBackEnd.controller.dto.GroupDto;
 
 import com.passionPay.passionPayBackEnd.controller.dto.MemberInfoDto;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.Group;
-import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMember;
-import com.passionPay.passionPayBackEnd.util.DateUtil;
+import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMission;
 import lombok.*;
 
 import java.util.List;
@@ -17,13 +16,15 @@ import java.util.stream.Collectors;
 public class GroupInfoDto {
     private Long groupId;
     private String groupName;
-    private String groupGoal;
+    private String groupDescription;
+    private boolean groupPrivacy;
+    private List<GroupMission> groupMissions;
     private int groupTimeGoal;
     private List<MemberInfoDto> groupMember;
     private int maxMember;
 
-    public static GroupInfoDto from(Group group) {
-        List<MemberInfoDto> groupMemberInfoList = group.getMembers()
+    public static GroupInfoDto from(Group group, List<GroupMission> groupMissions) {
+        List<MemberInfoDto> groupMemberInfoList = group.getGroupMembers()
                 .stream().map(member -> MemberInfoDto.builder()
                         .displayName(member.getMember().getDisplayName())
                         .categoryName(member.getMember().getCategoryName())
@@ -39,7 +40,9 @@ public class GroupInfoDto {
         return GroupInfoDto.builder()
                 .groupId(group.getGroupId())
                 .groupName(group.getGroupName())
-                .groupGoal(group.getGroupGoal())
+                .groupDescription(group.getGroupDescription())
+                .groupPrivacy(!group.getGroupPassword().isBlank()) // 공개여부
+                .groupMissions(groupMissions)
                 .groupTimeGoal(group.getGroupTimeGoal())
                 .groupMember(groupMemberInfoList)
                 .maxMember(group.getMaxMember())
