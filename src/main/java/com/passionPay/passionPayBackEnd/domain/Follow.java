@@ -27,5 +27,9 @@ public class Follow {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn( name = "follower_id")
-    private Member follower;
+    private Member following;
+
+    @Column
+    private boolean valid;
+
 }

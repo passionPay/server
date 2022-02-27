@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -22,19 +23,36 @@ public class FollowService {
     @Transactional
     public FollowInfoDto addFollow(Long user, Long follower) {
 
+        if(Objects.equals(user, follower)) throw new RuntimeException("can't follow yourself");
+
         Optional<Member> op_member_user = memberRepository.findById(user);
-        Optional<Member> op_member_follower = memberRepository.findById(follower);
+        Optional<Member> op_member_following = memberRepository.findById(follower);
 
-        if(op_member_user.isPresent() && op_member_follower.isPresent()) {
+        if(op_member_user.isPresent() && op_member_following.isPresent()) {
 
-            if(followRepository.existsByUserAndFollower(op_member_user.get(), op_member_follower.get())) {
-                throw new RuntimeException("existing user, follower mapping");
+            if(followRepository.existsByUserAndFollowing(op_member_user.get(), op_member_following.get())) {
+                throw new RuntimeException("existing user, following mapping");
             }
             else {
-                Follow follow = Follow.builder()
-                        .user(op_member_user.get())
-                        .follower(op_member_follower.get())
-                        .build();
+
+                // 팔로우 상대가 비공개 계정
+                Follow follow;
+                if(op_member_following.get().isPersonal()) {
+                    follow = Follow.builder()
+                            .user(op_member_user.get())
+                            .following(op_member_following.get())
+                            .valid(false)
+                            .build();
+                }
+                // 팔로우 상대가 공개 계정
+                else {
+                    follow = Follow.builder()
+                            .user(op_member_user.get())
+                            .following(op_member_following.get())
+                            .valid(true)
+                            .build();
+                }
+
                 followRepository.save(follow);
                 return FollowInfoDto.of(follow);
             }
@@ -49,30 +67,25 @@ public class FollowService {
     public Long deleteFollow(Long followId) {
 
         if(followRepository.existsById(followId)) {
-//            System.out.println("**************** " + followRepository.existsById(followId));
-//            System.out.println("**************** " + followRepository.findById(followId).get().getId());
             Follow follow = followRepository.findById(followId).get();
             follow.setUser(null);
-            follow.setFollower(null);
+            follow.setFollowing(null);
             followRepository.deleteById(followId);
-//            followRepository.delete
             return followId;
         }
         else {
             throw new RuntimeException("Invalid followId");
-//            response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
 
     }
 
     @Transactional
-    public Optional<List<FollowInfoDto> > getFollowing(Long memberId) {
+    public List<FollowInfoDto> getFollowing(Long memberId) {
 
         Optional<Member> opMember = memberRepository.findById(memberId);
 
         if(opMember.isPresent()) {
-            Optional< List<FollowInfoDto> > opFollowingList = followRepository.getFollowingByUser(opMember.get());
-            return opFollowingList;
+            return followRepository.getFollowingOBByMember(opMember.get());
         }
         else {
             throw new RuntimeException("Invalid followId");
@@ -81,13 +94,12 @@ public class FollowService {
     }
 
     @Transactional
-    public Optional<List<FollowInfoDto> > getFollower(Long memberId) {
+    public List<FollowInfoDto> getFollower(Long memberId) {
 
         Optional<Member> opMember = memberRepository.findById(memberId);
 
         if(opMember.isPresent()) {
-            Optional< List<FollowInfoDto> > opFollowingList = followRepository.getFollowerByUser(opMember.get());
-            return opFollowingList;
+            return followRepository.getFollowingIBByMember(opMember.get());
         }
         else {
             throw new RuntimeException("Invalid followId");
@@ -95,6 +107,34 @@ public class FollowService {
 
     }
 
+    @Transactional
+    public List<FollowInfoDto> getFollowingOBRequest(Long memberId) {
+        if(memberRepository.existsById(memberId)) {
+            return followRepository.getFollowingOBRequest(memberRepository.getById(memberId));
+        }
+        else {
+            throw new RuntimeException("Invalid followId");
+        }
+    }
 
+    @Transactional
+    public List<FollowInfoDto> getFollowingIBRequest(Long memberId) {
+        if(memberRepository.existsById(memberId)) {
+            return followRepository.getFollowingIBRequest(memberRepository.getById(memberId));
+        }
+        else {
+            throw new RuntimeException("Invalid followId");
+        }
+    }
 
+    @Transactional
+    public Boolean acceptFollowRequest(Long followId) {
+        if(followRepository.existsById(followId)) {
+            followRepository.acceptFollowRequest(followId);
+            return true;
+        }
+        else {
+            throw new RuntimeException("Invalid followId");
+        }
+    }
 }

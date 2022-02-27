@@ -16,11 +16,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
@@ -121,8 +123,11 @@ public class AuthService {
         Optional<Member> opMember = memberRepository.findById(id);
         if(opMember.isEmpty()) throw new RuntimeException("이미 가입되어 있는 유저입니다");
         else {
-            System.out.println("PassWord is: " + opMember.get().getPassword());
             Member member = opMember.get();
+
+            if(member.isPersonal() == true && memberRequestDto.isPersonal() == false) {
+                followRepository.validateAllRequest(id);
+            }
 
             member.setUsername(memberRequestDto.getUsername());
             member.setEmail(memberRequestDto.getEmail());
@@ -132,6 +137,7 @@ public class AuthService {
             member.setSchoolName(memberRequestDto.getSchoolName());
             member.setStage(memberRequestDto.getStage());
             member.setGrade(memberRequestDto.getGrade());
+            member.setPersonal(memberRequestDto.isPersonal());
 
             memberRepository.save(member);
             return id;
@@ -149,4 +155,23 @@ public class AuthService {
             throw new RuntimeException("cannot delete and non-existent user");
         }
     }
+
+    @Transactional
+    public Long modifyPassword(Long memberId, PasswordModifyDto passwordModifyDto) {
+        if(memberRepository.existsById(memberId)) {
+            Member member = memberRepository.getById(memberId);
+
+            UsernamePasswordAuthenticationToken authenticationToken = passwordModifyDto.toAuthentication();
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+
+
+            member.setPassword(passwordEncoder.encode(passwordModifyDto.getNewPassword()));
+            return memberId;
+        }
+        else {
+            throw new RuntimeException("invalid memberId");
+        }
+    }
+
 }

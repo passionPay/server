@@ -58,6 +58,9 @@ public class Member {
     @Column
     private int reportCount;
 
+    @Column
+    private boolean personal;
+
     @Column(updatable = true, nullable = false)
     @CreationTimestamp
     private LocalDateTime reportLastIssuedAt;

@@ -23,7 +23,7 @@ public class MemberRequestDto {
     private String schoolName;
     private Stage stage;
     private int grade;
-
+    private boolean personal;
 
 
     public Member toMember(PasswordEncoder passwordEncoder) {
@@ -39,6 +39,7 @@ public class MemberRequestDto {
                 .stage(stage)
                 .grade(grade)
                 .reportCount(5)
+                .personal(personal)
                 .build();
         return member;
     }

@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Repository
 public interface PrivatePostRepository extends JpaRepository<PrivatePost, Long> {
-//    @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.(m.id, m.username) FROM Follow f INNER JOIN Member m ON f.follower = m WHERE f.user = ?1")
+//    @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.(m.id, m.username) FROM Follow f INNER JOIN Member m ON f.following = m WHERE f.user = ?1")
 
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.PrivateCommunityDto.PrivatePostInfoDto(p.id, p.content, p.title ,p.photoUrl, p.createdAt, p.editedAt, p.member.username, p.member.id ,p.schoolName, p.anonymous, p.commentCount, p.likeCount, p.communityType) " +
             "FROM PrivatePost p " +

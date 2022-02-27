@@ -1,11 +1,9 @@
 package com.passionPay.passionPayBackEnd.controller;
 
 
-import com.passionPay.passionPayBackEnd.controller.dto.MemberRequestDto;
-import com.passionPay.passionPayBackEnd.controller.dto.MemberResponseDto;
-import com.passionPay.passionPayBackEnd.controller.dto.TokenDto;
-import com.passionPay.passionPayBackEnd.controller.dto.TokenRequestDto;
+import com.passionPay.passionPayBackEnd.controller.dto.*;
 import com.passionPay.passionPayBackEnd.service.AuthService;
+import com.passionPay.passionPayBackEnd.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +29,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.reissue(tokenRequestDto));
     }
 
+
     @GetMapping("/test")
     public String test() {
         return "hello, test";
     }
+
+
 }

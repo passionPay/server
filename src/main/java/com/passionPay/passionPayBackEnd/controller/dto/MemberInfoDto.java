@@ -21,6 +21,7 @@ public class MemberInfoDto {
     private String schoolName;
     private Stage stage;
     private int grade;
+    private boolean personal;
 
     public static MemberInfoDto of(Member member) {
         return MemberInfoDto.builder()
@@ -32,6 +33,7 @@ public class MemberInfoDto {
                 .schoolName(member.getSchoolName())
                 .stage(member.getStage())
                 .grade(member.getGrade())
+                .personal(member.isPersonal())
                 .build();
     }
 }
