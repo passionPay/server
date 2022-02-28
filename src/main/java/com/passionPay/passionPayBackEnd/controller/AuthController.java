@@ -29,11 +29,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.reissue(tokenRequestDto));
     }
 
-
-    @GetMapping("/test")
-    public String test() {
-        return "hello, test";
-    }
-
+//    @GetMapping("/test")
+//    public String test() {
+//        return "hello, test";
+//    }
 
 }

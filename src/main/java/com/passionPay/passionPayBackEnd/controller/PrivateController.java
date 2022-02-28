@@ -71,12 +71,11 @@ public class PrivateController {
     //유저의 댓글이 있는 게시글을 가져옴
     @GetMapping("/post/comment/{memberId}")
     public ResponseEntity<List<PrivatePostInfoDto> > getPostByMemberComment(@PathVariable(name = "memberId") Long memberId) {
-//        System.out.println("getPostByMemberComment");
         return ResponseEntity.ok(privateService.getPostByMemberComment(memberId));
     }
 
     //댓글이 있는 게시글의 개수
-    @GetMapping("post/comment/{memberId}/count")
+    @GetMapping("post/comment/count/{memberId}")
     public ResponseEntity<Long> getNumPostOfCommented(@PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.getNumPostOfCommented(memberId));
     }
@@ -131,8 +130,6 @@ public class PrivateController {
             @PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(privateService.reportPost(memberId, postId));
     }
-
-
 
     /*
      * 댓글 기능

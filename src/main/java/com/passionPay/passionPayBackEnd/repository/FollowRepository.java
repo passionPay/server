@@ -19,8 +19,14 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.FollowInfoDto(m.id, m.username) FROM Follow f INNER JOIN Member m ON f.following = m WHERE f.user = ?1 AND f.valid = true")
     List<FollowInfoDto> getFollowingOBByMember(Member member);
 
+    @Query("SELECT COUNT(f.id) FROM Follow f INNER JOIN Member m ON f.following = m WHERE f.user.id = ?1 AND f.valid = true")
+    Long getFollowingOBCountByMember(Long memberId);
+
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.FollowInfoDto(m.id, m.username) FROM Follow f INNER JOIN Member m ON f.user = m WHERE f.following = ?1 AND f.valid = true")
     List<FollowInfoDto> getFollowingIBByMember(Member member);
+
+    @Query("SELECT COUNT(f.id) FROM Follow f INNER JOIN Member m ON f.user = m WHERE f.following.id = ?1 AND f.valid = true")
+    Long getFollowingIBCountByMember(Long memberId);
 
     @Query("SELECT new com.passionPay.passionPayBackEnd.controller.dto.FollowInfoDto(m.id, m.username) FROM Follow f INNER JOIN Member m ON f.user = m WHERE f.following = ?1 AND f.valid = false")
     List<FollowInfoDto> getFollowingOBRequest(Member member);

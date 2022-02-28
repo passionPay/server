@@ -74,7 +74,7 @@ public class PublicController {
     }
 
     //댓글이 있는 게시글의 개수
-    @GetMapping("post/comment/{memberId}/count")
+    @GetMapping("post/comment/count/{memberId}")
     public ResponseEntity<Long> getNumPostOfCommented(@PathVariable(name = "memberId") Long memberId) {
         return ResponseEntity.ok(publicService.getNumPostOfCommented(memberId));
     }

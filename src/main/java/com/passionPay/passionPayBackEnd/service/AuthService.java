@@ -5,9 +5,7 @@ import com.passionPay.passionPayBackEnd.controller.dto.*;
 import com.passionPay.passionPayBackEnd.domain.Member;
 import com.passionPay.passionPayBackEnd.domain.RefreshToken;
 import com.passionPay.passionPayBackEnd.jwt.TokenProvider;
-import com.passionPay.passionPayBackEnd.repository.FollowRepository;
-import com.passionPay.passionPayBackEnd.repository.MemberRepository;
-import com.passionPay.passionPayBackEnd.repository.RefreshTokenRepository;
+import com.passionPay.passionPayBackEnd.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -29,6 +26,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PrivatePostRepository privatePostRepository;
+    private final PublicPostRepository publicPostRepository;
+    private final PrivateCommentRepository privateCommentRepository;
+    private final PublicCommentRepository publicCommentRepository;
 
     @Transactional
     public Long signup(MemberRequestDto memberRequestDto) {
@@ -125,7 +126,7 @@ public class AuthService {
         else {
             Member member = opMember.get();
 
-            if(member.isPersonal() == true && memberRequestDto.isPersonal() == false) {
+            if(member.isPersonal() && !memberRequestDto.isPersonal()) {
                 followRepository.validateAllRequest(id);
             }
 
@@ -172,6 +173,16 @@ public class AuthService {
         else {
             throw new RuntimeException("invalid memberId");
         }
+    }
+
+    @Transactional
+    public ProfileInfoDto getProfileInfo(Long memberId) {
+        return ProfileInfoDto.builder()
+                .follower(followRepository.getFollowingIBCountByMember(memberId))
+                .following(followRepository.getFollowingOBCountByMember(memberId))
+                .myPost(privatePostRepository.getPostCountByMember(memberId) + publicPostRepository.getPostCountByMember(memberId))
+                .myComment(privateCommentRepository.getNumPostOfCommented(memberId) + publicCommentRepository.getNumPostOfCommented(memberId))
+                .build();
     }
 
 }

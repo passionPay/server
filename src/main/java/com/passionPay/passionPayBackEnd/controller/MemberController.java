@@ -5,6 +5,7 @@ package com.passionPay.passionPayBackEnd.controller;
 import com.passionPay.passionPayBackEnd.controller.dto.MemberInfoDto;
 import com.passionPay.passionPayBackEnd.controller.dto.MemberRequestDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PasswordModifyDto;
+import com.passionPay.passionPayBackEnd.controller.dto.ProfileInfoDto;
 import com.passionPay.passionPayBackEnd.service.AuthService;
 import com.passionPay.passionPayBackEnd.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,11 @@ public class MemberController {
         Long memberId = SecurityUtil.getCurrentMemberId();
         System.out.println("memberId = " + memberId);
         return ResponseEntity.ok(authService.modifyPassword(memberId, passwordModifyDto));
+    }
+
+    @GetMapping("/profileInfo/{id}")
+    public ResponseEntity<ProfileInfoDto> getProfileInfo(@PathVariable(name = "id") Long id) {
+        return ResponseEntity.ok(authService.getProfileInfo(id));
     }
 
 
