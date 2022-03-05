@@ -27,6 +27,11 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             "WHERE t.planner = :planner")
     List<TaskDto> findByPlanner(@Param("planner") Planner planner);
 
+    @Query("SELECT SUM(t.totalTime) " +
+            "FROM Task t INNER JOIN t.planner " +
+            "WHERE planner = :planner")
+    int findTotalTimeByPlanner(@Param("planner") Planner planner);
+
     // task 삭제
     void deleteByTaskId(Long taskId);
     void delete(Task task);

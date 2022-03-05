@@ -54,7 +54,6 @@ public class PlannerController {
         return ResponseEntity.ok(plannerService.getPlannerByMemberIdAndDate(memberId, DateUtil.parseStringToDate(date)));
     }
 
-    // 플래너 업데이트
     @PutMapping("/{plannerId}")
     public ResponseEntity<Planner> updatePlanner(
             @PathVariable(name="plannerId") Long plannerId, @RequestBody PlannerRequestDto plannerRequestDto) {

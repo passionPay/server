@@ -25,6 +25,7 @@ public class Group {
     @OneToMany(mappedBy="group", cascade = CascadeType.REMOVE)
     @Column(name="group_member")
     @Builder.Default
+    @JsonIgnore
     private List<GroupMember> groupMembers = new ArrayList<>();
 
     @Column(name="group_name")

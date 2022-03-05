@@ -1,16 +1,17 @@
 package com.passionPay.passionPayBackEnd.service;
 
-import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.GroupInfoDto;
-import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.GroupRequestDto;
+import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.*;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.Group;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMember;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMission;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupPost;
+import com.passionPay.passionPayBackEnd.domain.PlannerDomain.Planner;
 import com.passionPay.passionPayBackEnd.repository.*;
 import com.passionPay.passionPayBackEnd.util.SecurityUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,9 +25,12 @@ public class GroupService {
     private final GroupPostRepository groupPostRepository;
     private final GroupCommentRepository groupCommentRepository;
     private final GroupLikeRepository groupLikeRepository;
-    private final GroupPostService groupPostService;
+    private final GroupProgressRepository groupProgressRepository;
+    private final GroupProgressService groupProgressService;
+    private final TaskRepository taskRepository;
+    private final PlannerRepository plannerRepository;
 
-    public GroupService(GroupRepository groupRepository, MemberRepository memberRepository, GroupMemberRepository groupMemberRepository, GroupMissionRepository groupMissionRepository, GroupPostRepository groupPostRepository, GroupCommentRepository groupCommentRepository, GroupLikeRepository groupLikeRepository, GroupPostService groupPostService) {
+    public GroupService(GroupRepository groupRepository, MemberRepository memberRepository, GroupMemberRepository groupMemberRepository, GroupMissionRepository groupMissionRepository, GroupPostRepository groupPostRepository, GroupCommentRepository groupCommentRepository, GroupLikeRepository groupLikeRepository, GroupProgressRepository groupProgressRepository, GroupProgressService groupProgressService, TaskRepository taskRepository, PlannerRepository plannerRepository) {
         this.groupRepository = groupRepository;
         this.memberRepository = memberRepository;
         this.groupMemberRepository = groupMemberRepository;
@@ -34,7 +38,10 @@ public class GroupService {
         this.groupPostRepository = groupPostRepository;
         this.groupCommentRepository = groupCommentRepository;
         this.groupLikeRepository = groupLikeRepository;
-        this.groupPostService = groupPostService;
+        this.groupProgressRepository = groupProgressRepository;
+        this.groupProgressService = groupProgressService;
+        this.taskRepository = taskRepository;
+        this.plannerRepository = plannerRepository;
     }
 
     // group 생성
@@ -64,19 +71,52 @@ public class GroupService {
                     groupMissionRepository.saveAll(groupMissions);
 
                     groupMemberRepository.save(groupMember);
-                    return GroupInfoDto.from(group, groupMissions);
+                    return GroupInfoDto.from(group, groupMissionRepository.findByGroup(group));
                 })
                 .orElseThrow(RuntimeException::new);
     }
 
     // 모든 group 조회
-    public List<GroupInfoDto> getGroupInfoList() {
-        return groupRepository.findAllByOrderByGroupIdDesc()
-                .stream().map(group -> GroupInfoDto.from(group, groupMissionRepository.findByGroup(group)))
-                .collect(Collectors.toList());
+    @Transactional
+    public GroupDetailDto getGroupInfoList(Long memberId, LocalDate today) {
+        // my groups
+        List<MyGroupDto> myGroupDto = groupRepository.findMyGroupsByMemberId(memberId)
+                .stream()
+                .map(group -> {
+                    ProgressDto progressDto = ProgressDto.builder()
+                            .missionProgress(groupProgressService.getMyCount(group))
+                            .timeProgress(0)
+                            .build();
+
+                    plannerRepository.findByMemberIdAndDate(memberId, today)
+                            .ifPresent(planner -> {
+                                int timeProgress = (planner.getCurrentStudyTime().toSecondOfDay() * 1000) / group.getGroupTimeGoal();
+                                progressDto.setTimeProgress(timeProgress);
+                            });
+                    return MyGroupDto.from(group, progressDto);
+                }).collect(Collectors.toList());
+
+        // other groups
+        // TODO: 그룹 평균 공부시간
+        List<OtherGroupDto> otherGroupDto = groupRepository.findOtherGroupsByMemberId(SecurityUtil.getCurrentMemberId())
+                .stream().map(group -> {
+                    int groupAvgStudyTime = 0;
+                    ProgressDto progressDto = ProgressDto.builder()
+                            .missionProgress(groupProgressService.getGroupAvgCount(group))
+                            .timeProgress(groupAvgStudyTime)
+                            .build();
+                    return OtherGroupDto.from(group, progressDto, groupAvgStudyTime);
+                }).collect(Collectors.toList());
+
+        // dto
+        return GroupDetailDto.builder()
+                .myGroupDto(myGroupDto)
+                .otherGroupDto(otherGroupDto)
+                .build();
     }
 
     // group id 로 group info 조회
+    @Transactional
     public GroupInfoDto getGroupInfoById(Long groupId) {
         return groupRepository.findById(groupId)
                 .map(group -> GroupInfoDto.from(group, groupMissionRepository.findByGroup(group)))
@@ -84,6 +124,7 @@ public class GroupService {
     }
 
     // group 가입하기
+    @Transactional
     public GroupInfoDto joinGroupByGroupId(Long groupId, Long memberId) {
         return groupRepository.findById(groupId)
                 .map(group -> {

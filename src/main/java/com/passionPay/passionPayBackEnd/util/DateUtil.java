@@ -5,6 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -31,11 +34,27 @@ public class DateUtil {
         return LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME);
     }
 
+    public static List<LocalDate> parseMonthString(String month) {
+        String[] yearAndMonth = month.split("-");
+        if (yearAndMonth.length != 2 || yearAndMonth[0].length() != 4 || yearAndMonth[1].length() != 2)
+            return null;
+
+        LocalDate monthStart = LocalDate.of(Integer.parseInt(yearAndMonth[0]), Integer.parseInt(yearAndMonth[1]), 1);
+        LocalDate monthEnd = LocalDate.of(Integer.parseInt(yearAndMonth[0]), Integer.parseInt(yearAndMonth[1]), monthStart.lengthOfMonth()-1);
+
+        List<LocalDate> localDates = new ArrayList<>();
+        localDates.add(monthStart);
+        localDates.add(monthEnd);
+
+        return localDates;
+    }
+
     public static long formatDDayToInt(LocalDate dDay) {
         if (dDay == null) return -1;
 
         LocalDate today = LocalDate.now();
-        return DAYS.between(today, dDay);
+        long dayCount = DAYS.between(today, dDay);
+        return (dayCount > -1? dayCount : -1 );
     }
 
     public static long getTimeBetween(LocalTime start, LocalTime end) {

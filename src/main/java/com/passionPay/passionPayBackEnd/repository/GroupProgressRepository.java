@@ -1,5 +1,6 @@
 package com.passionPay.passionPayBackEnd.repository;
 
+import com.passionPay.passionPayBackEnd.domain.GroupDomain.Group;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMission;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,13 +20,14 @@ public interface GroupProgressRepository extends JpaRepository<GroupProgress, Lo
     @Query("SELECT COUNT(gp.id) " +
             "FROM GroupProgress gp INNER JOIN gp.groupMission gm " +
             "WHERE gp.groupMemberId = :groupMemberId AND " +
-            "gm = :groupMission AND gp.complete = true")
-    int findCountByGroupMemberAndGroupMission(@Param("groupMemberId") Long groupMemberId, @Param("groupMission") GroupMission groupMission);
+            "gp.complete = true AND gm.group = :group")
+    int findCountByGroupMemberAndGroupMission(@Param("groupMemberId") Long groupMemberId, @Param("group") Group group);
+
     // 그룹 평균 미션 달성률
     @Query("SELECT COUNT(gp.id) " +
             "FROM GroupProgress gp INNER JOIN gp.groupMission gm " +
-            "WHERE gp.complete = true AND gm = :groupMission")
-    int findCountByGroupMission(@Param("groupMission") GroupMission groupMission);
+            "WHERE gp.complete = true AND gm.group = :group")
+    int findCountByGroupMission(@Param("group") Group group);
 
     // update
 

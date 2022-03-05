@@ -1,10 +1,12 @@
 package com.passionPay.passionPayBackEnd.controller;
 
+import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.GroupDetailDto;
 import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.GroupInfoDto;
 import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.GroupRequestDto;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupMission;
 import com.passionPay.passionPayBackEnd.service.GroupMissionService;
 import com.passionPay.passionPayBackEnd.service.GroupService;
+import com.passionPay.passionPayBackEnd.util.DateUtil;
 import com.passionPay.passionPayBackEnd.util.SecurityUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +25,9 @@ public class GroupController {
         this.groupMissionService = groupMissionService;
     }
 
-    // 모든 그룹을 id desc 로 정렬하여 반환
     @GetMapping
-    public ResponseEntity<List<GroupInfoDto>> getAllGroup() {
-        return ResponseEntity.ok(groupService.getGroupInfoList());
+    public ResponseEntity<GroupDetailDto> getAllGroup(@RequestBody String today) {
+        return ResponseEntity.ok(groupService.getGroupInfoList(SecurityUtil.getCurrentMemberId(), DateUtil.parseStringToDate(today)));
     }
 
     // group 과 연관된 mission 조회

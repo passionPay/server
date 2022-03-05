@@ -2,6 +2,7 @@ package com.passionPay.passionPayBackEnd.service;
 
 import com.passionPay.passionPayBackEnd.controller.dto.GroupDto.GroupProgressDto;
 import com.passionPay.passionPayBackEnd.controller.dto.MemberInfoDto;
+import com.passionPay.passionPayBackEnd.domain.GroupDomain.Group;
 import com.passionPay.passionPayBackEnd.domain.GroupDomain.GroupProgress;
 import com.passionPay.passionPayBackEnd.repository.GroupMemberRepository;
 import com.passionPay.passionPayBackEnd.repository.GroupMissionRepository;
@@ -45,28 +46,22 @@ public class GroupProgressService {
     }
 
     // find
-    public int getMyCount(Long groupMissionId) {
-        return groupMissionRepository.findById(groupMissionId)
-                .map(groupMission ->
-                    groupMemberRepository.findByMemberIdAndGroupId(SecurityUtil.getCurrentMemberId(), groupMission.getGroup().getGroupId())
-                            .map(groupMember -> {
-                                // 내가 성공한 미션 개수
-                                int count = groupProgressRepository.findCountByGroupMemberAndGroupMission(groupMember.getGroupMemberId(), groupMission);
-                                // 미션 개수 총 합
-                                int missionCount = groupMissionRepository.findByGroup(groupMission.getGroup()).size();
-                                return count / missionCount * 100;
-                            }).orElseThrow(RuntimeException::new))
-                .orElseThrow(RuntimeException::new);
+    public int getMyCount(Group group) {
+        return groupMemberRepository.findByMemberIdAndGroupId(SecurityUtil.getCurrentMemberId(), group.getGroupId())
+                .map(groupMember -> {
+                    // 내가 성공한 미션 개수
+                    int count = groupProgressRepository.findCountByGroupMemberAndGroupMission(groupMember.getGroupMemberId(), group);
+                    // 미션 개수 총 합
+                    int missionCount = groupMissionRepository.findByGroup(group).size();
+                    return count / missionCount * 100;
+                }).orElseThrow(RuntimeException::new);
     }
 
-    public int getGroupAvgCount(Long groupMissionId) {
-        return groupMissionRepository.findById(groupMissionId)
-                .map(groupMission -> {
-                    int count = groupProgressRepository.findCountByGroupMission(groupMission);
-                    int missionCount = groupMissionRepository.findByGroup(groupMission.getGroup()).size();
-                    int memberCount = groupMission.getGroup().getGroupMembers().size();
-                    return (count / missionCount) / memberCount * 100;
-                }).orElseThrow(RuntimeException::new);
+    public int getGroupAvgCount(Group group) {
+        int count = groupProgressRepository.findCountByGroupMission(group);
+        int missionCount = groupMissionRepository.findByGroup(group).size();
+        int memberCount = group.getGroupMembers().size();
+        return (count / missionCount) / memberCount * 100;
     }
 
     // update

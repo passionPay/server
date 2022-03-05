@@ -4,6 +4,7 @@ import com.passionPay.passionPayBackEnd.controller.dto.PlannerDto.PlannerDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PlannerDto.PlannerRequestDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PlannerDto.SubjectTaskDto;
 import com.passionPay.passionPayBackEnd.controller.dto.PlannerDto.TaskDto;
+import com.passionPay.passionPayBackEnd.controller.dto.ProfileDto.ProfileDto;
 import com.passionPay.passionPayBackEnd.domain.PlannerDomain.Planner;
 import com.passionPay.passionPayBackEnd.domain.PlannerDomain.Task;
 import com.passionPay.passionPayBackEnd.domain.PlannerDomain.Timestamp;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class PlannerService {
@@ -106,6 +108,77 @@ public class PlannerService {
                     .timestamps(timestampRepository.findByPlannerOrderById(planner))
                     .build();
         }).orElse(null);
+    }
+
+    // 프로필 메인
+    @Transactional
+    public ProfileDto getProfileMain(String date) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        LocalDate today = DateUtil.parseStringToDate(date);
+        List<Integer> studyTimes = plannerRepository.findByMemberIdAndDateBetween(memberId, today, today.plusDays(7))
+                .stream()
+                .map(planner -> planner.getCurrentStudyTime().toSecondOfDay() * 1000)
+                .collect(Collectors.toList());
+
+        ProfileDto profileDto = ProfileDto.builder()
+                .dayTimeGoal(0)
+                .todayStudyTime(0)
+                .studyTime(studyTimes)
+                .build();
+        // TODO
+        plannerRepository.findByMemberIdAndDate(memberId, today)
+                .ifPresent(planner -> {
+                    profileDto.setDayTimeGoal(planner.getExpectedStudyTime().toSecondOfDay() * 1000);
+                    profileDto.setTodayStudyTime(planner.getCurrentStudyTime().toSecondOfDay() * 1000);
+                });
+
+        return profileDto;
+    }
+
+    // 일간 통계
+    @Transactional
+    public ProfileDto getTodayProfileStatistics(String date) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        LocalDate today = DateUtil.parseStringToDate(date);
+
+        ProfileDto profileDto = ProfileDto.builder()
+                .dayTimeGoal(0)
+                .todayStudyTime(0)
+                .build();
+
+        plannerRepository.findByMemberIdAndDate(memberId, today)
+                .ifPresent(planner -> {
+                    profileDto.setDayTimeGoal(planner.getExpectedStudyTime().toSecondOfDay() * 1000);
+                    profileDto.setTodayStudyTime(planner.getCurrentStudyTime().toSecondOfDay() * 1000);
+                });
+
+        return profileDto;
+    }
+
+    // 주간
+    @Transactional
+    public List<Integer> getWeekProfile(String date) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        LocalDate today = DateUtil.parseStringToDate(date);
+        List<Integer> studyTimes = plannerRepository.findByMemberIdAndDateBetween(memberId, today, today.plusDays(7))
+                .stream()
+                .map(planner -> planner.getCurrentStudyTime().toSecondOfDay() * 1000)
+                .collect(Collectors.toList());
+        return studyTimes;
+    }
+
+    // 월간
+    // TODO: 항상 일정하게 30개씩 받아오도록 수정하기...
+    @Transactional
+    public List<Integer> getMonthProfile(String month) {
+        Long memberId = SecurityUtil.getCurrentMemberId();
+        List<LocalDate> localDates = DateUtil.parseMonthString(month);
+        System.out.println(localDates.get(0).toString() + localDates.get(1));
+        List<Integer> studyTimes = plannerRepository.findByMemberIdAndDateBetween(memberId, localDates.get(0), localDates.get(1))
+                .stream()
+                .map(planner -> planner.getCurrentStudyTime().toSecondOfDay() * 1000)
+                .collect(Collectors.toList());
+        return studyTimes;
     }
 
     @Transactional
