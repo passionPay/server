@@ -7,6 +7,7 @@ import com.passionPay.passionPayBackEnd.service.PrivateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,10 +27,15 @@ public class PrivateController {
      */
 
     //게시글 추가
-    @PostMapping("/post")
-    public ResponseEntity<Long> addPost(@RequestBody PrivatePostDto privatePostDto) {
-        return ResponseEntity.ok(privateService.addPost(privatePostDto));
-    }
+//    @PostMapping("/post")
+//    public ResponseEntity<Long> addPost(@RequestBody PrivatePostDto privatePostDto) {
+//        return ResponseEntity.ok(privateService.addPost(privatePostDto));
+//    }
+
+//    @PostMapping("/post")
+//    public ResponseEntity<Long> addPost(@RequestBody PrivatePostDto privatePostDto, @RequestParam(value = "images", required = false) MultipartFile multipartFile) {
+//        return ResponseEntity.ok(privateService.addPost(privatePostDto));
+//    }
 
     @GetMapping("/post/{memberId}")
     public ResponseEntity<List<PrivatePostInfoDto> > getPostByMember(
