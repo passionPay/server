@@ -3,6 +3,8 @@
 
 
 ## Database Schema
+![Database Schema](https://github.com/passionPay/server/blob/main/server.png)
+
 
 
 
